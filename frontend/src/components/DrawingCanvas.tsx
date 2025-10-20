@@ -9,6 +9,9 @@ export default function DrawingCanvas() {
   const [brushSize, setBrushSize] = useState(5);
   const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
   const [showToolbar, setShowToolbar] = useState(false);
+  const [brushType, setBrushType] = useState('solid');
+  const [brushStyle, setBrushStyle] = useState('pen');
+  const [customBrush, setCustomBrush] = useState('default');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -17,15 +20,22 @@ export default function DrawingCanvas() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const dpiFactor = 2;
+
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
 
-      const parentHeight = parent.clientHeight || window.innerHeight;
-      const parentWidth = parent.clientWidth || window.innerWidth;
+      const parentWidth = parent.clientWidth;
+      const parentHeight = parent.clientHeight;
 
-      canvas.width = parentWidth;
-      canvas.height = parentHeight;
+      canvas.width = parentWidth * dpiFactor;
+      canvas.height = parentHeight * dpiFactor;
+
+      canvas.style.width = `${parentWidth}px`;
+      canvas.style.height = `${parentHeight}px`;
+
+      ctx.scale(dpiFactor, dpiFactor);
 
       ctx.fillStyle = 'white';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -81,11 +91,40 @@ export default function DrawingCanvas() {
     ctx.beginPath();
     ctx.moveTo(lastPosition.x, lastPosition.y);
     ctx.lineTo(x, y);
+
     ctx.strokeStyle = color;
     ctx.lineWidth = brushSize;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.stroke();
+
+    if (customBrush === 'watercolor') {
+      ctx.globalAlpha = 0.3;
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, brushSize);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x - brushSize, y - brushSize, brushSize * 2, brushSize * 2);
+    } else if (customBrush === 'texture') {
+      const patternCanvas = document.createElement('canvas');
+      const patternCtx = patternCanvas.getContext('2d');
+      if (patternCtx) {
+        patternCanvas.width = brushSize;
+        patternCanvas.height = brushSize;
+        patternCtx.fillStyle = color;
+        patternCtx.fillRect(0, 0, brushSize, brushSize);
+        patternCtx.strokeStyle = 'white';
+        patternCtx.lineWidth = 2;
+        patternCtx.strokeRect(0, 0, brushSize, brushSize);
+        const pattern = ctx.createPattern(patternCanvas, 'repeat');
+        if (pattern) {
+          ctx.fillStyle = pattern;
+          ctx.fillRect(x - brushSize, y - brushSize, brushSize * 2, brushSize * 2);
+        }
+      }
+    } else {
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+    }
 
     setLastPosition({ x, y });
   };
@@ -99,6 +138,7 @@ export default function DrawingCanvas() {
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
+    ctx.globalAlpha = 1;
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
@@ -125,6 +165,20 @@ export default function DrawingCanvas() {
       {showToolbar && (
         <div className="absolute top-0 left-0 w-full bg-gray-800/90 text-white p-4 z-10">
           <div className="flex justify-between items-center">
+            {/* Custom Brush Selector */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm">Vrsta čopiča:</label>
+              <select
+                value={customBrush}
+                onChange={(e) => setCustomBrush(e.target.value)}
+                className="px-2 py-1 rounded bg-gray-700 text-white"
+              >
+                <option value="default">Default</option>
+                <option value="watercolor">Watercolor</option>
+                <option value="texture">Texture</option>
+              </select>
+            </div>
+
             {/* Color Swatches */}
             <div className="flex gap-2">
               {colorPresets.map((presetColor) => (
@@ -149,14 +203,25 @@ export default function DrawingCanvas() {
 
             {/* Brush Size Slider */}
             <div className="flex items-center gap-2">
-              <label className="text-sm">Velikost čopiča: {brushSize}px</label>
+              <label
+                className="text-sm"
+                style={{ width: '80px', display: 'inline-block' }}
+              >
+                Velikost čopiča: {brushSize}px
+              </label>
               <input
                 type="range"
                 min="1"
                 max="50"
                 value={brushSize}
                 onChange={(e) => setBrushSize(Number(e.target.value))}
-                className="w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                className="w-32 appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #90EE90, #FFD700)`,
+                  height: `${brushSize / 2}px`,
+                  borderRadius: '10px',
+                  transition: 'height 0.2s ease',
+                }}
               />
             </div>
 
