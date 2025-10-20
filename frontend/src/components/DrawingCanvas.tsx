@@ -12,6 +12,8 @@ export default function DrawingCanvas() {
   const [brushType, setBrushType] = useState('solid');
   const [brushStyle, setBrushStyle] = useState('pen');
   const [customBrush, setCustomBrush] = useState('default');
+  const [history, setHistory] = useState<ImageData[]>([]);
+  const [redoHistory, setRedoHistory] = useState<ImageData[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -50,7 +52,62 @@ export default function DrawingCanvas() {
     };
   }, []);
 
+  const saveState = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setHistory((prev) => [...prev, snapshot]);
+    setRedoHistory([]);
+  };
+
+  const undo = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx || history.length === 0) return;
+
+    const currentState = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setRedoHistory((prev) => [...prev, currentState]);
+
+    const previousState = history[history.length - 1];
+    setHistory((prev) => prev.slice(0, -1));
+    ctx.putImageData(previousState, 0, 0);
+  };
+
+  const redo = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx || redoHistory.length === 0) return;
+
+    const nextState = redoHistory[redoHistory.length - 1];
+    setRedoHistory((prev) => prev.slice(0, -1));
+
+    const currentState = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    setHistory((prev) => [...prev, currentState]);
+
+    ctx.putImageData(nextState, 0, 0);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      } else if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'Z')) {
+        e.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [undo, redo]);
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    saveState();
     setIsDrawing(true);
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -227,6 +284,18 @@ export default function DrawingCanvas() {
 
             {/* Action Buttons */}
             <div className="flex gap-3">
+              <button
+                onClick={undo}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+              >
+                ↩️
+              </button>
+              <button
+                onClick={redo}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+              >
+                ↪️
+              </button>
               <button
                 onClick={clearCanvas}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
