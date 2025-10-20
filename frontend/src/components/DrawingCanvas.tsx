@@ -9,8 +9,6 @@ export default function DrawingCanvas() {
   const [brushSize, setBrushSize] = useState(5);
   const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
   const [showToolbar, setShowToolbar] = useState(false);
-  const [brushType, setBrushType] = useState('solid');
-  const [brushStyle, setBrushStyle] = useState('pen');
   const [customBrush, setCustomBrush] = useState('default');
   const [history, setHistory] = useState<ImageData[]>([]);
   const [redoHistory, setRedoHistory] = useState<ImageData[]>([]);
