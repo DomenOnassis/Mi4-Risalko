@@ -22,6 +22,15 @@ class Connection:
             print("Error fetching documents:", e)
             return []
     
+    def find_one(self, collection_name, filter_query):
+        try:            
+            collection = self.db[collection_name]
+            document = collection.find_one(filter_query)
+            return document
+        except Exception as e:
+            print("Error fetching documents:", e)
+            return None
+    
     def lookup_all(self, collection_name, pipeline):
         if  not pipeline:
             print("No filter provided when updating element")

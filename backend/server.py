@@ -9,6 +9,36 @@ api = Blueprint('api', __name__, url_prefix='/api')
 
 db = Connection("risalko")
 
+@api.post("/login")
+def login():
+    data = request.get_json()
+    
+    is_valid, message = validator.validate_required_fields(data, ["email", "password"])
+    
+    if not is_valid:
+        return Response( json_util.dumps({
+            'error': message
+        })), 400
+    
+    email = data.get("email")
+    password = data.get("password")
+    
+    user = db.find_one("users", {"email": email, "password": password})
+    
+    if not user:
+        return Response( json_util.dumps({
+            'error': 'User not found'
+        })), 404
+    
+    return Response(
+        json_util.dumps({"data": user}),
+        mimetype='application/json'
+    ), 200
+
+@api.post("/register")
+def register():
+    return create_user()
+   
 #Users
 @api.get("/users")
 def get_users():
@@ -40,7 +70,7 @@ def create_user():
     if(not data):        
         return Response(json_util.dumps({'error': 'Invalid JSON data'})), 400
         
-    is_valid, message = validator.validate_required_fields(data, ["name", "surname", "email"])        
+    is_valid, message = validator.validate_required_fields(data, ["name", "surname", "email", "password"])        
 
     if not is_valid:
         return Response(json_util.dumps({
@@ -51,6 +81,7 @@ def create_user():
         'name': data.get("name"),
         'surname': data.get("surname"),
         'email': data.get("email"),
+        'password': data.get("password"),
         'type': data.get("type", "student"),
     }
     
