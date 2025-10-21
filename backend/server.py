@@ -40,7 +40,7 @@ def create_user():
     if(not data):        
         return Response(json_util.dumps({'error': 'Invalid JSON data'})), 400
         
-    is_valid, message = validator.validate_required_fields(data, ["name", "surname"])        
+    is_valid, message = validator.validate_required_fields(data, ["name", "surname", "email"])        
 
     if not is_valid:
         return Response(json_util.dumps({
@@ -50,6 +50,7 @@ def create_user():
     user = {
         'name': data.get("name"),
         'surname': data.get("surname"),
+        'email': data.get("email"),
         'type': data.get("type", "student"),
     }
     
