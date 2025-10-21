@@ -9,7 +9,7 @@ api = Blueprint('api', __name__, url_prefix='/api')
 
 db = Connection("risalko")
 
-#User
+#Users
 @api.get("/users")
 def get_users():
     populate = request.args.get("populate", False)
@@ -33,16 +33,19 @@ def get_users():
         mimetype='application/json'
     ), 200
     
-@api.post("/user")
-def create_user():
-    data = request.get_json()
-        
-    missing_fields = validator.validate_required_fields(data, ["name, surname"])
+@api.post("/users")
+def create_user():    
+    data = request.get_json(silent=True)    
     
-    if missing_fields:
-        return Response({
-            'error': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
+    if(not data):        
+        return Response(json_util.dumps({'error': 'Invalid JSON data'})), 400
+        
+    is_valid, message = validator.validate_required_fields(data, ["name", "surname"])        
+
+    if not is_valid:
+        return Response(json_util.dumps({
+            'error': message
+        })), 400
     
     user = {
         'name': data.get("name"),
@@ -57,7 +60,7 @@ def create_user():
         mimetype='application/json'
     ), 200
 
-#Story   
+#Stories  
 @api.get("/stories")
 def get_stories():
     
@@ -67,16 +70,16 @@ def get_stories():
         mimetype='application/json'
     ), 200
     
-@api.post("/story")
+@api.post("/stories")
 def create_story():
     data = request.get_json()
         
-    missing_fields = validator.validate_required_fields(data, ["title, author, short_description, content, teacher_id"])
+    is_valid, message = validator.validate_required_fields(data, ["title", "author", "short_description", "content", "teacher_id"])
     
-    if missing_fields:
-        return Response({
-            'error': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
+    if not is_valid:
+        return Response( json_util.dumps({
+            'error': message
+        })), 400
         
     teacher_id = data.get("teacher_id")
     
@@ -90,21 +93,21 @@ def create_story():
     try:
         teacher_object_id = ObjectId(teacher_id)
     except Exception:
-        return Response({'error': 'Invalid teacher_id format'}), 400
+        return Response( json_util.dumps({'error': 'Invalid teacher_id format'})), 400
     
     inserted_story = db.insert("stories", story)    
     
-    update_user = db.update_one("user", {'stories': inserted_story['_id']}, {'_id': teacher_object_id}, append_array=True)
+    update_user = db.update_one("users", {'stories': inserted_story}, {'_id': teacher_object_id}, append_array=True)
     
     if(not update_user):
-                return Response({'error': 'Could not append story to user'}), 400
+        return Response(json_util.dumps({'error': 'Could not append story to user'})), 400
            
     return Response(
-        json_util.dumps({"data": inserted_story}),
+        json_util.dumps({"data": story}),
         mimetype='application/json'
     ), 200
     
-#Class
+#Classes
 @api.get("/classes")
 def get_classes():
     populate = request.args.get("populate", False)
@@ -135,16 +138,16 @@ def get_classes():
         mimetype='application/json'
     ), 200
     
-@api.post("/class")
+@api.post("/classes")
 def create_class():
     data = request.get_json()
         
-    missing_fields = validator.validate_required_fields(data, ["students, teacher"])
+    is_valid, message = validator.validate_required_fields(data, ["students", "teacher"])
     
-    if missing_fields:
-        return Response({
-            'error': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
+    if not is_valid:
+        return Response(json_util.dumps({
+            'error': message
+        })), 400
     
     user = {
         'students': data.get("students"),
