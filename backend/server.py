@@ -60,6 +60,32 @@ def create_user():
         mimetype='application/json'
     ), 200
 
+@api.delete("/users/<user_id>")
+def delete_user(user_id):
+            
+    try:
+        user_object_id = ObjectId(user_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid user_id format'})), 400
+        
+    res = db.delete("users", {'_id': user_object_id})    
+    
+    if res["type"] == "teacher":
+        delete_class(user_id)    
+    else:
+        refs_res = db.delete_ref_from_array("classes", "students", user_object_id)
+        
+        if(refs_res is None):
+            return Response( json_util.dumps({'error': 'Could not delete refs'})), 400
+    
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not delete user'})), 400
+
+    return Response(
+        json_util.dumps({"data": user_id}),
+        mimetype='application/json'
+    ), 200
+
 #Stories  
 @api.get("/stories")
 def get_stories():
@@ -104,6 +130,29 @@ def create_story():
            
     return Response(
         json_util.dumps({"data": story}),
+        mimetype='application/json'
+    ), 200
+    
+@api.delete("/stories/<story_id>")
+def delete_story(story_id):
+    
+    try:
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid story_id format'})), 400
+        
+    res = db.delete("stories", {'_id': story_object_id})    
+    
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not delete story'})), 400
+    
+    refs_ref = db.delete_ref_from_array("users",  "stories", story_object_id)
+
+    if refs_ref is None:
+        return Response( json_util.dumps({'error': 'Could not delete refs'})), 400
+
+    return Response(
+        json_util.dumps({"data": story_id}),
         mimetype='application/json'
     ), 200
     
@@ -158,6 +207,24 @@ def create_class():
    
     return Response(
         json_util.dumps({"data": user}),
+        mimetype='application/json'
+    ), 200
+    
+@api.delete("/classes/<class_id>")
+def delete_class(class_id):
+    
+    try:
+        class_object_id = ObjectId(class_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid class_id format'})), 400
+        
+    res = db.delete("classes", {'_id': class_object_id})
+    
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not delete class'})), 400
+
+    return Response(
+        json_util.dumps({"data": class_id}),
         mimetype='application/json'
     ), 200
     
