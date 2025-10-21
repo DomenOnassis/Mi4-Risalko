@@ -3,6 +3,9 @@ from bson import json_util, ObjectId
 from db import Connection
 import validator
 
+import secrets
+import string
+
 app = Flask(__name__)
 
 api = Blueprint('api', __name__, url_prefix='/api')
@@ -37,19 +40,29 @@ def get_users():
 def create_user():
     data = request.get_json()
         
-    missing_fields = validator.validate_required_fields(data, ["name, surname"])
+    missing_fields = validator.validate_required_fields(data, ["name", "surname"])
     
     if missing_fields:
         return Response({
             'error': f'Missing required fields: {", ".join(missing_fields)}'
         }), 400
     
+    user_type = data.get("type", "student")
+
     user = {
         'name': data.get("name"),
         'surname': data.get("surname"),
-        'type': data.get("type", "student"),
+        'type': user_type,
     }
     
+    if user_type == "student":
+        code = generate_unique_code(8)
+
+        while db.find_one("users", {"code": code}):
+            code = generate_unique_code(8)
+
+        user["code"] = code
+
     db.insert("users", user)    
    
     return Response(
@@ -158,6 +171,10 @@ def create_class():
         mimetype='application/json'
     ), 200
     
+# Create unique code
+def generate_unique_code(length=8):
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
 
 if __name__=="__main__":
     app.register_blueprint(api)
