@@ -2,11 +2,12 @@ from flask import Flask, Response,request, Blueprint
 from bson import json_util, ObjectId
 from db import Connection
 import validator
+from flask_cors import CORS
 
 app = Flask(__name__)
 
 api = Blueprint('api', __name__, url_prefix='/api')
-
+CORS(app)
 db = Connection("risalko")
 
 @api.post("/login")
