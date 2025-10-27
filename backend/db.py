@@ -28,11 +28,20 @@ class Connection:
     def find_all(self, collection_name):
         try:            
             collection = self.db[collection_name]
-            documents = list(collection.find({}, {'_id': 0}))
+            documents = list(collection.find({}))
             return documents
         except Exception as e:
             print("Error fetching documents:", e)
             return []
+    
+    def find_one(self, collection_name, filter_query):
+        try:            
+            collection = self.db[collection_name]
+            document = collection.find_one(filter_query)
+            return document
+        except Exception as e:
+            print("Error fetching documents:", e)
+            return None
     
     def lookup_all(self, collection_name, pipeline):
         if  not pipeline:
@@ -58,6 +67,27 @@ class Connection:
         except Exception as e:
             print("Error inserting document:", e)
             return None
+        
+    def delete(self, collection_name, filter_query):
+       try:
+           collection = self.db[collection_name]
+           result = collection.find_one_and_delete(filter_query)             
+           return result
+       except Exception as e:
+           print("Error inserting document:", e)
+           return None
+       
+    def delete_ref_from_array(self, collection_name, array_field, item_id):
+       try:
+           collection = self.db[collection_name]
+           result = collection.update_many(
+               {array_field: item_id},
+               {'$pull': {array_field: item_id}}
+           )             
+           return result.modified_count
+       except Exception as e:
+           print("Error deleting references:", e)
+           return None
     
     def update_one(self, collection_name, item, filter_query, append_array = False):
       if(not filter_query):

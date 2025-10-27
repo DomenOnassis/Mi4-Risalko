@@ -2,6 +2,7 @@ from flask import Flask, Response,request, Blueprint
 from bson import json_util, ObjectId
 from db import Connection
 import validator
+from flask_cors import CORS
 
 import secrets
 import string
@@ -9,10 +10,40 @@ import string
 app = Flask(__name__)
 
 api = Blueprint('api', __name__, url_prefix='/api')
-
+CORS(app)
 db = Connection("risalko")
 
-#User
+@api.post("/login")
+def login():
+    data = request.get_json()
+    
+    is_valid, message = validator.validate_required_fields(data, ["email", "password"])
+    
+    if not is_valid:
+        return Response( json_util.dumps({
+            'error': message
+        })), 400
+    
+    email = data.get("email")
+    password = data.get("password")
+    
+    user = db.find_one("users", {"email": email, "password": password})
+    
+    if not user:
+        return Response( json_util.dumps({
+            'error': 'User not found'
+        })), 404
+    
+    return Response(
+        json_util.dumps({"data": user}),
+        mimetype='application/json'
+    ), 200
+
+@api.post("/register")
+def register():
+    return create_user()
+   
+#Users
 @api.get("/users")
 def get_users():
     populate = request.args.get("populate", False)
@@ -36,22 +67,27 @@ def get_users():
         mimetype='application/json'
     ), 200
     
-@api.post("/user")
-def create_user():
-    data = request.get_json()
-        
-    missing_fields = validator.validate_required_fields(data, ["name", "surname"])
+@api.post("/users")
+def create_user():    
+    data = request.get_json(silent=True)    
     
-    if missing_fields:
-        return Response({
-            'error': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
+    if(not data):        
+        return Response(json_util.dumps({'error': 'Invalid JSON data'})), 400
+        
+    is_valid, message = validator.validate_required_fields(data, ["name", "surname", "email", "password"])        
+
+    if not is_valid:
+        return Response(json_util.dumps({
+            'error': message
+        })), 400
     
     user_type = data.get("type", "student")
 
     user = {
         'name': data.get("name"),
         'surname': data.get("surname"),
+        'email': data.get("email"),
+        'password': data.get("password"),
         'type': user_type,
     }
     
@@ -70,7 +106,33 @@ def create_user():
         mimetype='application/json'
     ), 200
 
-#Story   
+@api.delete("/users/<user_id>")
+def delete_user(user_id):
+            
+    try:
+        user_object_id = ObjectId(user_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid user_id format'})), 400
+        
+    res = db.delete("users", {'_id': user_object_id})    
+    
+    if res["type"] == "teacher":
+        delete_class(user_id)    
+    else:
+        refs_res = db.delete_ref_from_array("classes", "students", user_object_id)
+        
+        if(refs_res is None):
+            return Response( json_util.dumps({'error': 'Could not delete refs'})), 400
+    
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not delete user'})), 400
+
+    return Response(
+        json_util.dumps({"data": user_id}),
+        mimetype='application/json'
+    ), 200
+
+#Stories  
 @api.get("/stories")
 def get_stories():
     
@@ -80,16 +142,16 @@ def get_stories():
         mimetype='application/json'
     ), 200
     
-@api.post("/story")
+@api.post("/stories")
 def create_story():
     data = request.get_json()
         
-    missing_fields = validator.validate_required_fields(data, ["title, author, short_description, content, teacher_id"])
+    is_valid, message = validator.validate_required_fields(data, ["title", "author", "short_description", "content", "teacher_id"])
     
-    if missing_fields:
-        return Response({
-            'error': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
+    if not is_valid:
+        return Response( json_util.dumps({
+            'error': message
+        })), 400
         
     teacher_id = data.get("teacher_id")
     
@@ -103,21 +165,44 @@ def create_story():
     try:
         teacher_object_id = ObjectId(teacher_id)
     except Exception:
-        return Response({'error': 'Invalid teacher_id format'}), 400
+        return Response( json_util.dumps({'error': 'Invalid teacher_id format'})), 400
     
     inserted_story = db.insert("stories", story)    
     
-    update_user = db.update_one("user", {'stories': inserted_story['_id']}, {'_id': teacher_object_id}, append_array=True)
+    update_user = db.update_one("users", {'stories': inserted_story}, {'_id': teacher_object_id}, append_array=True)
     
     if(not update_user):
-                return Response({'error': 'Could not append story to user'}), 400
+        return Response(json_util.dumps({'error': 'Could not append story to user'})), 400
            
     return Response(
-        json_util.dumps({"data": inserted_story}),
+        json_util.dumps({"data": story}),
         mimetype='application/json'
     ), 200
     
-#Class
+@api.delete("/stories/<story_id>")
+def delete_story(story_id):
+    
+    try:
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid story_id format'})), 400
+        
+    res = db.delete("stories", {'_id': story_object_id})    
+    
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not delete story'})), 400
+    
+    refs_ref = db.delete_ref_from_array("users",  "stories", story_object_id)
+
+    if refs_ref is None:
+        return Response( json_util.dumps({'error': 'Could not delete refs'})), 400
+
+    return Response(
+        json_util.dumps({"data": story_id}),
+        mimetype='application/json'
+    ), 200
+    
+#Classes
 @api.get("/classes")
 def get_classes():
     populate = request.args.get("populate", False)
@@ -148,16 +233,16 @@ def get_classes():
         mimetype='application/json'
     ), 200
     
-@api.post("/class")
+@api.post("/classes")
 def create_class():
     data = request.get_json()
         
-    missing_fields = validator.validate_required_fields(data, ["students, teacher"])
+    is_valid, message = validator.validate_required_fields(data, ["students", "teacher"])
     
-    if missing_fields:
-        return Response({
-            'error': f'Missing required fields: {", ".join(missing_fields)}'
-        }), 400
+    if not is_valid:
+        return Response(json_util.dumps({
+            'error': message
+        })), 400
     
     user = {
         'students': data.get("students"),
@@ -175,6 +260,25 @@ def create_class():
 def generate_unique_code(length=8):
     chars = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(chars) for _ in range(length))
+  
+@api.delete("/classes/<class_id>")
+def delete_class(class_id):
+    
+    try:
+        class_object_id = ObjectId(class_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid class_id format'})), 400
+        
+    res = db.delete("classes", {'_id': class_object_id})
+    
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not delete class'})), 400
+
+    return Response(
+        json_util.dumps({"data": class_id}),
+        mimetype='application/json'
+    ), 200
+    
 
 if __name__=="__main__":
     app.register_blueprint(api)
