@@ -1,4 +1,8 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 export default function Home() {
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900">
       <main className="container mx-auto px-4 py-16">
@@ -18,7 +22,8 @@ export default function Home() {
               Preberi zgodbe
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Učitelji delijo vznemirljive odlomke zgodb, ki vzbudijo ustvarjalnost in radovednost
+              Učitelji delijo vznemirljive odlomke zgodb, ki vzbudijo
+              ustvarjalnost in radovednost
             </p>
           </div>
 
@@ -28,7 +33,8 @@ export default function Home() {
               Riši in ustvari
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Učenci oživijo svojo domišljijo s pisanimi risbami in ilustracijami
+              Učenci oživijo svojo domišljijo s pisanimi risbami in
+              ilustracijami
             </p>
           </div>
 
@@ -38,7 +44,8 @@ export default function Home() {
               Ustvarjajte skupaj
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Sodelujte pri ustvarjanju novih zgodb, polnih umetnosti in domišljije
+              Sodelujte pri ustvarjanju novih zgodb, polnih umetnosti in
+              domišljije
             </p>
           </div>
         </div>
@@ -51,9 +58,30 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Pridružite se Risalku in sprostite svojo domišljijo!
             </p>
-            <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-8 py-3 rounded-full hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl">
-              Začni
-            </button>
+             <div className="space-y-4">
+      <button
+        onClick={() => router.push("/register")}
+        className="cursor-pointer bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-10 py-3 rounded-full hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+      >
+        🪄 Registriraj se
+      </button>
+
+      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+        <button
+          onClick={() => router.push("/login-student")}
+          className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-8 py-3 rounded-full hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+        >
+          Prijavi se kot učenec
+        </button>
+        <button
+          onClick={() => router.push("/login-teacher")}
+          className="cursor-pointer bg-gradient-to-r from-blue-300 to-purple-300 text-white font-semibold px-8 py-3 rounded-full hover:from-blue-400 hover:to-purple-400 transition-all shadow-lg hover:shadow-xl"
+        >
+          Prijavi se kot učitelj
+        </button>
+      </div>
+          </div>
+            
           </div>
         </div>
       </main>
