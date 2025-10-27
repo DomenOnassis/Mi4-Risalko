@@ -12,7 +12,19 @@ class Connection:
     def __init__(self, database):
         client = MongoClient(DB_URI)
         self.db = client[database]
-	
+
+    def find_one(self, collection_name, filter_query):
+        if not filter_query:
+            print("No filter provided for find_one.")
+            return None
+        try:
+            collection = self.db[collection_name]
+            document = collection.find_one(filter_query, {'_id': 0})
+            return document
+        except Exception as e:
+            print("Error fetching document:", e)
+            return None
+        
     def find_all(self, collection_name):
         try:            
             collection = self.db[collection_name]
