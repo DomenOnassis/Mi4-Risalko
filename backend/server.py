@@ -221,7 +221,6 @@ def create_story():
         })), 400
             
     story = {
-        'status': 'in_progress',
         'title': data.get("title"),
         'author': data.get("author"),
         'short_description': data.get("short_description"),
