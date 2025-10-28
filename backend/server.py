@@ -72,6 +72,11 @@ def create_user():
         })), 400
     
     user_type = data.get("type", "student")
+    
+    if user_type not in ["student", "teacher"]:
+        return Response(json_util.dumps({
+            'error': 'Invalid user type'
+        })), 400
 
     user = {    
         'name': data.get("name"),
@@ -155,7 +160,7 @@ def add_paragraph(user_id):
     return Response(
         json_util.dumps({"data": paragraph}),mimetype='application/json')
 
-@api.update("users/<user_id>/paragraphs/<paragraph_id>")
+@api.patch("users/<user_id>/paragraphs/<paragraph_id>")
 def update_paragraph(user_id, paragraph_id):
     data = request.get_json()
         
@@ -249,7 +254,7 @@ def delete_story(story_id):
     if res is None:
         return Response( json_util.dumps({'error': 'Could not delete story'})), 400
     
-    refs_ref = db.delete_ref_from_array("users",  "stories", story_object_id)
+    refs_ref = db.delete_ref_from_array("classes", "stories", story_object_id)
 
     if refs_ref is None:
         return Response( json_util.dumps({'error': 'Could not delete refs'})), 400
@@ -326,7 +331,7 @@ def create_class():
     except Exception:
         return Response( json_util.dumps({'error': 'Invalid id format'})), 400
 
-@api.update("/classes/<class_id>")
+@api.patch("/classes/<class_id>")
 def update_class(class_id):
     data = request.get_json()
     
