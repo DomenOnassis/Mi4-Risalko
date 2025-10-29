@@ -230,6 +230,7 @@ def create_story():
         'author': data.get("author"),
         'short_description': data.get("short_description"),
         'content': data.get('content'),
+        'is_finished': False,
     }
 
     inserted_story = db.insert("stories", story)    
@@ -238,6 +239,55 @@ def create_story():
            
     return Response(
         json_util.dumps({"data": story}),
+        mimetype='application/json'
+    ), 200
+    
+@api.patch("/stories/<story_id>")
+def update_story(story_id):
+    data = request.get_json()
+    
+    if not data:
+        return Response(json_util.dumps({
+            'error': "No data provided"
+        }), 400)
+    
+    update_fields = {}
+
+    if data.get("title") is not None:
+        update_fields['title'] = data.get("title")
+
+    if data.get("author") is not None:
+        update_fields['author'] = data.get("author")
+
+    if data.get("short_description") is not None:
+        update_fields['short_description'] = data.get("short_description")
+
+    if data.get("content") is not None:
+        update_fields['content'] = data.get("content")
+
+    if data.get("is_finished") is not None:
+        update_fields['is_finished'] = data.get("is_finished")
+
+    if not update_fields:
+        return Response(json_util.dumps({'error': 'No fields to update'}), 400)        
+           
+    try:
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid story_id format'})), 400    
+
+    res = db.update_one(
+        "stories",
+        update_fields,  
+        {'_id': story_object_id},
+        append_array=False 
+    )
+        
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not update story'})), 400
+
+    return Response(
+        json_util.dumps({"data": res}),
         mimetype='application/json'
     ), 200
     
