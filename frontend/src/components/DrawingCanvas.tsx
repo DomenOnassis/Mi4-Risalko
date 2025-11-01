@@ -321,8 +321,8 @@ export default function DrawingCanvas() {
   return (
     <div className="relative w-full h-[90vh] flex flex-col">
       {showToolbar && (
-        <div className="absolute top-0 left-0 w-full bg-gray-800/90 text-white p-4 z-10">
-          <div className="flex justify-between items-center">
+        <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 dark:from-pink-700 dark:via-purple-700 dark:to-blue-700 text-white p-4 z-10 rounded-3xl m-2 shadow-2xl border-4 border-yellow-300">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm">Orodje:</label>
               <div className="flex gap-2">
@@ -350,27 +350,28 @@ export default function DrawingCanvas() {
             </div>
 
             {tool === 'brush' && (
-              <div className="flex items-center gap-2">
-                <label className="text-sm">Vrsta čopiča:</label>
+              <div className="flex items-center gap-2 bg-white/20 rounded-full px-4 py-2">
+                <label className="text-lg font-black">🖌️ Čopič:</label>
                 <select
                   value={customBrush}
                   onChange={(e) => setCustomBrush(e.target.value)}
-                  className="px-2 py-1 rounded bg-gray-700 text-white"
+                  className="px-3 py-2 rounded-full bg-white text-purple-700 font-bold border-2 border-yellow-400"
                 >
-                  <option value="default">Default</option>
-                  <option value="watercolor">Watercolor</option>
-                  <option value="texture">Texture</option>
+                  <option value="default">Navaden ✏️</option>
+                  <option value="watercolor">Vodene barve 💧</option>
+                  <option value="texture">Tekstura ✨</option>
                 </select>
               </div>
             )}
 
+            {/* Color Swatches */}
             <div className="flex gap-2">
               {colorPresets.map((presetColor) => (
                 <button
                   key={presetColor}
                   onClick={() => setColor(presetColor)}
-                  className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${
-                    color === presetColor ? 'border-blue-600 scale-110' : 'border-gray-300'
+                  className={`w-10 h-10 rounded-full border-4 transition-transform hover:scale-125 shadow-lg ${
+                    color === presetColor ? 'border-yellow-300 scale-125 ring-4 ring-white' : 'border-white'
                   }`}
                   style={{ backgroundColor: presetColor }}
                   title={presetColor}
@@ -380,58 +381,58 @@ export default function DrawingCanvas() {
                 type="color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                className="w-8 h-8 rounded cursor-pointer border-2 border-gray-300"
-                title="Izberi poljubno barvo"
+                className="w-10 h-10 rounded-full cursor-pointer border-4 border-white shadow-lg"
+                title="🎨 Izberi poljubno barvo"
               />
             </div>
 
-            {tool === 'brush' && (
-              <div className="flex items-center gap-2">
-                <label
-                  className="text-sm"
-                  style={{ width: '80px', display: 'inline-block' }}
-                >
-                  Velikost čopiča: {brushSize}px
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={brushSize}
-                  onChange={(e) => setBrushSize(Number(e.target.value))}
-                  className="w-32 appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #90EE90, #FFD700)`,
-                    height: `${brushSize / 2}px`,
-                    borderRadius: '10px',
-                    transition: 'height 0.2s ease',
-                  }}
-                />
-              </div>
-            )}
+            {/* Brush Size Slider */}
+            <div className="flex items-center gap-2">
+              <label
+                className="text-sm"
+                style={{ width: '80px', display: 'inline-block' }}
+              >
+                Velikost čopiča: {brushSize}px
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={brushSize}
+                onChange={(e) => setBrushSize(Number(e.target.value))}
+                className="w-32 appearance-none cursor-pointer"
+                style={{
+                  background: `linear-gradient(to right, #90EE90, #FFD700)`,
+                  height: `${brushSize / 2}px`,
+                  borderRadius: '10px',
+                  transition: 'height 0.2s ease',
+                }}
+              />
+            </div>
 
+            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 onClick={undo}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+                className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
               >
-                ↩️
+                ↩️ Nazaj
               </button>
               <button
                 onClick={redo}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
+                className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
               >
-                ↪️
+                ↪️ Naprej
               </button>
               <button
                 onClick={clearCanvas}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
               >
                 🗑️ Počisti
               </button>
               <button
                 onClick={saveDrawing}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
               >
                 💾 Shrani
               </button>
@@ -442,13 +443,13 @@ export default function DrawingCanvas() {
 
       <button
         onClick={() => setShowToolbar(!showToolbar)}
-        className="absolute top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-20 hover:bg-blue-700 transition-colors"
+        className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-full z-20 hover:from-pink-600 hover:to-purple-700 transition-colors font-black text-lg shadow-2xl transform hover:scale-110 border-4 border-yellow-300"
       >
-        {showToolbar ? 'Skrij Orodja' : 'Prikaži Orodja'}
+        {showToolbar ? '🎨 Skrij Orodja' : '🎨 Prikaži Orodja'}
       </button>
 
       {/* Canvas */}
-      <div className="border-4 border-gray-300 dark:border-gray-600 overflow-hidden bg-white flex-1">
+      <div className="border-8 border-rainbow rounded-3xl overflow-hidden bg-white flex-1 shadow-2xl" style={{borderImage: 'linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCF7F, #4ECDC4, #C44569) 1'}}>
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}

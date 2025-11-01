@@ -11,19 +11,52 @@ const AddStoryPage = () => {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [content, setContent] = useState('');
-  const [uploadMethod, setUploadMethod] = useState<'text' | 'pdf'>('text');
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'text' | 'txt'>('text');
+  const [txtFile, setTxtFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [txtContent, setTxtContent] = useState<string>('');
+  const [isReadingTxt, setIsReadingTxt] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTxtFileRead = async (file: File): Promise<string> => {
+    try {
+      const text = await file.text();
+      if (!text || text.trim().length === 0) {
+        throw new Error('TXT datoteka ne vsebuje besedila');
+      }
+      return text;
+    } catch (e) {
+      console.error('TXT read error:', e);
+      throw new Error('Napaka pri branju TXT datoteke');
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
+    if (file && file.type === 'text/plain') {
+      setTxtFile(file);
       setError(null);
+      setIsReadingTxt(true);
+
+      try {
+        const text = await handleTxtFileRead(file);
+        setTxtContent(text);
+        setContent(text);
+      } catch (err) {
+        console.error('TXT read failed:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Napaka pri branju TXT datoteke';
+        setError(errorMessage);
+        setTxtContent('');
+
+        alert('Napaka pri branju .txt datoteke. Lahko vnesete besedilo ročno v polje za besedilo.');
+        setUploadMethod('text');
+      } finally {
+        setIsReadingTxt(false);
+      }
     } else {
-      setError('Prosim naložite PDF datoteko');
-      setPdfFile(null);
+      setError('Prosim naložite .txt datoteko');
+      setTxtFile(null);
+      setTxtContent('');
     }
   };
 
@@ -35,8 +68,8 @@ const AddStoryPage = () => {
     try {
       let storyContent = content;
 
-      if (uploadMethod === 'pdf' && pdfFile) {
-        storyContent = `[PDF Upload: ${pdfFile.name}]\n\nNote: PDF text extraction not yet implemented.`;
+      if (uploadMethod === 'txt' && txtFile && txtContent) {
+        storyContent = txtContent;
       }
 
       const storyData = {
@@ -125,14 +158,14 @@ const AddStoryPage = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setUploadMethod('pdf')}
+                  onClick={() => setUploadMethod('txt')}
                   className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
-                    uploadMethod === 'pdf'
+                    uploadMethod === 'txt'
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                   }`}
                 >
-                  📄 PDF
+                  📄 .txt
                 </button>
               </div>
             </div>
@@ -157,35 +190,71 @@ const AddStoryPage = () => {
             ) : (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Naloži PDF datoteko *
+                  Naloži .txt datoteko *
                 </label>
                 <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center">
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept=".txt"
                     onChange={handleFileChange}
                     className="hidden"
-                    id="pdf-upload"
-                    required={uploadMethod === 'pdf'}
+                    id="txt-upload"
+                    required={uploadMethod === 'txt'}
+                    disabled={isReadingTxt}
                   />
                   <label
-                    htmlFor="pdf-upload"
-                    className="cursor-pointer inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg"
+                    htmlFor="txt-upload"
+                    className={`cursor-pointer inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg ${
+                      isReadingTxt ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
-                    📤 Izberi PDF datoteko
+                    {isReadingTxt ? '⏳ Branje .txt...' : '📤 Izberi .txt datoteko'}
                   </label>
-                  {pdfFile && (
+                  
+                  {txtFile && (
                     <div className="mt-4 text-gray-700 dark:text-gray-300">
                       <p className="font-medium">Izbrana datoteka:</p>
-                      <p className="text-sm">{pdfFile.name}</p>
+                      <p className="text-sm">{txtFile.name}</p>
                       <p className="text-xs text-gray-500">
-                        {(pdfFile.size / 1024).toFixed(2)} KB
+                        {(txtFile.size / 1024).toFixed(2)} KB
                       </p>
+                      {isReadingTxt && (
+                        <p className="text-sm text-blue-600 mt-2">
+                          ⏳ Branje .txt datoteke...
+                        </p>
+                      )}
+                      {txtContent && !isReadingTxt && (
+                        <p className="text-sm text-green-600 mt-2">
+                          ✅ Besedilo uspešno naloženo ({txtContent.length} znakov)
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
+
+                {txtContent && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Vsebina iz .txt datoteke:
+                    </label>
+                    <textarea
+                      value={txtContent}
+                      onChange={(e) => {
+                        setTxtContent(e.target.value);
+                        setContent(e.target.value);
+                      }}
+                      placeholder="Vsebina iz .txt datoteke se bo pojavila tukaj..."
+                      rows={10}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100 font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Dolžina: {txtContent.length} znakov - Lahko uredite besedilo po potrebi
+                    </p>
+                  </div>
+                )}
+
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Opomba: PDF ekstrakcija besedila še ni implementirana. Datoteka bo shranjena kot referenca.
+                  💡 Besedilo iz .txt datoteke bo prikazano za urejanje
                 </p>
               </div>
             )}
@@ -201,10 +270,13 @@ const AddStoryPage = () => {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isReadingTxt || (uploadMethod === 'txt' && !txtContent)}
                 className="flex-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-semibold py-3 rounded-lg hover:from-blue-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? '⏳ Ustvarjam...' : '✨ Ustvari zgodbo'}
+                {isLoading ? '⏳ Ustvarjam...' : 
+                 isReadingTxt ? '⏳ Branje .txt...' :
+                 uploadMethod === 'txt' && !txtContent ? '📄 Najprej naložite .txt' :
+                 '✨ Ustvari zgodbo'}
               </button>
             </div>
           </form>
