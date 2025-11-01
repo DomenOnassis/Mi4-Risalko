@@ -1,6 +1,7 @@
 from pymongo import MongoClient, ReturnDocument
 from dotenv import load_dotenv
 from datetime import datetime
+import certifi
 
 import os
 
@@ -10,7 +11,13 @@ DB_URI= os.getenv("DB_URI")
 
 class Connection:        
     def __init__(self, database):
-        client = MongoClient(DB_URI)
+        # Fix SSL/TLS handshake issues with MongoDB Atlas
+        client = MongoClient(
+            DB_URI,
+            tlsCAFile=certifi.where(),  # Use certifi's CA bundle
+            serverSelectionTimeoutMS=5000,  # Faster timeout for debugging
+            connectTimeoutMS=5000
+        )
         self.db = client[database]
 
     def find_one(self, collection_name, filter_query):
