@@ -3,6 +3,49 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Primary & Secondary */
+  --color-primary: #3B82F6;    /* Vibrant blue, friendly */
+  --color-secondary: #fff1cd;  /* Warm yellow, playful accent */
+  --color-button: #ffdf76;
+  /* Backgrounds */
+  --color-bg: #F9FAFB;         /* Very light gray/white */
+  --color-card: #FFFFFF;       /* Card background */
+  --color-bg-alt: #EFF6FF;     /* Subtle blue tint for sections */
+
+  /* Text */
+  --color-text: #1b1d20;       /* Dark for readability */
+  --color-text-muted: #535964;
+  --color-text-light: #fff3cc;
+
+  /* Playful / Segment colors */
+  --color-segment-1: #F87171;  /* Soft red */
+  --color-segment-2: #34D399;  /* Green */
+  --color-segment-3: #60A5FA;  /* Light blue */
+  --color-segment-4: #FCD34D;  /* Yellow */
+  --color-segment-5: #A78BFA;  /* Purple */
+  
+}
+@theme {
+  --color-primary: #3B82F6;    /* Vibrant blue, friendly */
+  --color-secondary: #fff1cd;  /* Warm yellow, playful accent */
+  --color-button: #ffdf76;
+  /* Backgrounds */
+  --color-bg: #F9FAFB;         /* Very light gray/white */
+  --color-card: #FFFFFF;       /* Card background */
+  --color-bg-alt: #EFF6FF;     /* Subtle blue tint for sections */
+
+  /* Text */
+  --color-text: #1b1d20;       /* Dark for readability */
+  --color-text-muted: #535964; /* Gray for secondary text */
+  --color-text-light: #fff3cc;
+
+  /* Playful / Segment colors */
+  --color-segment-1: #F87171;  /* Soft red */
+  --color-segment-2: #34D399;  /* Green */
+  --color-segment-3: #60A5FA;  /* Light blue */
+  --color-segment-4: #FCD34D;  /* Yellow */
+  --color-segment-5: #A78BFA;  /* Purple */
 }
 
 @theme inline {

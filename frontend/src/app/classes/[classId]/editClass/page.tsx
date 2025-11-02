@@ -1,19 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 
-const Classes = () => {
+const EditClass = () => {
   const router = useRouter();
+  const params = useParams();
+  const classId = params?.classId as string;
 
   const [classData, setClassData] = useState({
-    className: '',
+    class_name: '',
     color: '#4F46E5',
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    
+    if (!classId) return;
+
+    const fetchClass = async () => {
+      try {
+
+        const res = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`);
+        if (!res.ok) throw new Error('Failed to fetch class data');
+
+        const result = await res.json();
+        const cls = result.data;
+
+        setClassData({
+          class_name: cls.class_name || '',
+          color: cls.color || '#4F46E5',
+        });
+      } catch (error) {
+        console.error('Error fetching class:', error);
+        alert('Could not load class data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClass();
+  }, [classId]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setClassData({
       ...classData,
@@ -25,37 +54,38 @@ const Classes = () => {
     e.preventDefault();
 
     try {
-      const placeholderTeacher = '68f2abbbf05e7dde3d965491';
-
-      const payload = {
-        ...classData,
-        teacher: placeholderTeacher,
-      };
-
-      const res = await fetch('http://127.0.0.1:5000/api/classes', {
-        method: 'POST',
+      const res = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(classData),
       });
 
       const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to update class');
 
-      if (!res.ok) throw new Error(result.error || 'Something went wrong');
-
-      console.log('Class created:', result);
+      console.log('Class updated:', result);
       router.back();
     } catch (error) {
-      console.error('Error creating class:', error);
-      alert('Failed to create class');
+      console.error('Error updating class:', error);
+      alert('Failed to update class');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-700">
+        Nalagam podatke o razredu...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-700">
-          Ustvari nov razred
+          Uredi razred
         </h1>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col">
             <label className="mb-1 font-medium text-gray-700">
@@ -63,9 +93,9 @@ const Classes = () => {
             </label>
             <input
               type="text"
-              name="className"
+              name="class_name"
               placeholder="Ime razreda"
-              value={classData.className}
+              value={classData.class_name}
               onChange={handleChange}
               required
               className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700"
@@ -89,9 +119,9 @@ const Classes = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition-colors duration-200"
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-md transition-colors duration-200"
           >
-            Ustvari razred
+            Shrani spremembe
           </button>
         </form>
       </div>
@@ -99,4 +129,4 @@ const Classes = () => {
   );
 };
 
-export default Classes;
+export default EditClass;
