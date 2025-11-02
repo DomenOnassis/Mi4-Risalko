@@ -51,15 +51,15 @@ const Classes = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-700">
+    <div className="background flex items-center justify-center">
+      <div className="section-dark w-md">
+        <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Ustvari nov razred
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">
-              Ime razreda:
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Ime razreda
             </label>
             <input
               type="text"
@@ -68,13 +68,13 @@ const Classes = () => {
               value={classData.className}
               onChange={handleChange}
               required
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700"
+              className="input-text"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="mb-1 font-medium text-gray-700">
-              Barva razreda:
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Barva razreda
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -89,7 +89,7 @@ const Classes = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md transition-colors duration-200"
+            className="btn bg-gradient-to-r from-purple-200 via-pink-100 to-yellow-100 text-black w-full"
           >
             Ustvari razred
           </button>

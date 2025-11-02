@@ -54,7 +54,7 @@ const Classes = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this class?')) return;
+    if (!confirm('Ste prepričani, da želite izbrisati ta razred?')) return;
 
     try {
       await fetch(`http://127.0.0.1:5000/api/classes/${id}`, { method: 'DELETE' });
@@ -67,51 +67,51 @@ const Classes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="background">
       <div className="mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 bg-primary p-8">
+        <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
           <div>
-            <h1 className="text-3xl font-bold text-text">Your Classes</h1>
-            <p className="text-text-light text-lg">
-              Welcome back, <span className="font-semibold text-text">{teacherName}</span> 👋
+            <h1 className="text-3xl font-bold text-gray-200">Vaše učilnice</h1>
+            <p className="text-gray-200 font-semibold text-lg">
+              Dobrodošli nazaj, <span className="text-yellow-100">{teacherName}</span> 👋
             </p>
           </div>
 
           <Link
             href="/classes/createClass"
-            className="bg-button hover:bg-gray-50 text-text font-bold py-2 px-4 rounded-lg shadow-sm hover:scale-110 transition-all duration-200"
+            className="btn bg-yellow-100 text-text"
           >
-            + Create New Class
+            + Ustvari nov razred
           </Link>
         </div>
 
         {loading ? (
-          <p className="text-text text-center">Loading your classes...</p>
+          <p className="text-text text-center">Nalaganje vaših učilnic...</p>
         ) : classes.length === 0 ? (
-          <p className="text-text text-center">No classes found. Create one to get started!</p>
+          <p className="text-text text-center">Ni najdenih učilnic. Ustvarite jo!</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
             {classes.map((cls, index) => (
               <div
                 key={typeof cls._id === 'string' ? cls._id : cls._id?.$oid || index}
-                className="relative bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-100 hover:-translate-y-2 cursor-pointer"
+                className="card bg-sky-400"
                 onClick={() => router.push(`/classes/${cls._id}`)}
               >
                 <div
-                  className="absolute bottom-2 right-3 flex gap-2 opacity-70 hover:opacity-100"
+                  className="absolute bottom-2 right-3 flex gap-2 hover:opacity-100"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => handleEdit(cls._id as string)}
-                    className="p-2 rounded-md hover:bg-gray-100 transition"
+                    className="p-2 rounded-md hover:bg-gray-200 transition text-black"
                     title="Edit Class"
                   >
                     <Pencil size={20} />
                   </button>
                   <button
                     onClick={() => handleDelete(cls._id as string)}
-                    className="p-2 rounded-md hover:bg-red-100 text-red-500 transition"
+                    className="p-2 rounded-md hover:bg-red-400 text-black transition"
                     title="Delete Class"
                   >
                     <Trash2 size={20} />
@@ -119,11 +119,11 @@ const Classes = () => {
                 </div>
 
                 <h2 className="text-xl font-semibold text-text mb-2">
-                  {cls.class_name || 'Unnamed Class'}
+                  {cls.class_name || 'Neimenovana učilnica'}
                 </h2>
                 <p className="text-text-muted mt-3 font-medium">
                   👥 {cls.students?.length || 0}{' '}
-                  {cls.students?.length === 1 ? 'Student' : 'Students'}
+                  {cls.students?.length === 1 ? 'Učenec' : 'Učenci'}
                 </p>
               </div>
             ))}

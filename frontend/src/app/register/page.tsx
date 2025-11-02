@@ -59,9 +59,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900">
-      <div className="bg-white/90 dark:bg-gray-800/80 p-10 rounded-2xl shadow-xl max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+    <div className="background flex items-center justify-center">
+      <div className="section-dark w-md">
+        <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Ustvari račun
         </h1>
 
@@ -86,7 +86,7 @@ export default function RegisterPage() {
               placeholder="vnesi ime"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
@@ -99,7 +99,7 @@ export default function RegisterPage() {
               placeholder="vnesi priimek"
               value={surname}
               onChange={(e) => setSurname(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
@@ -112,7 +112,7 @@ export default function RegisterPage() {
               placeholder="vnesi e-poštni naslov"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
@@ -125,7 +125,7 @@ export default function RegisterPage() {
               placeholder="vnesi geslo"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
@@ -138,13 +138,13 @@ export default function RegisterPage() {
               placeholder="ponovno vnesi geslo"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 text-white font-semibold py-2 rounded-lg hover:from-pink-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg"
+            className="btn bg-gradient-to-r from-purple-200 via-pink-100 to-yellow-100 text-black w-full"
           >
             Registracija
           </button>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-gray-600 dark:text-gray-400 mt-6 text-sm">
           Že imaš račun?{" "}
-          <a href="/login-teacher" className="text-purple-600 hover:underline">
+          <a href="/login-teacher" className="text-yellow-100">
             Prijavi se
           </a>
         </p>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 type Student = {
@@ -8,38 +8,67 @@ type Student = {
     lastName: string;
 };
 
+
+
 const AddStudentsPage = () => {
+    const [classData, setClassData] = useState({
+        class_name: ''
+    });
     const params = useParams();
     const classId = params.classId;
+
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+
+        if (!classId) return;
+
+        const fetchClass = async () => {
+            try {
+
+                const res = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`);
+                if (!res.ok) throw new Error('Failed to fetch class data');
+
+                const result = await res.json();
+                const cls = result.data;
+
+                setClassData({
+                    class_name: cls.class_name || '',
+                });
+            } catch (error) {
+                console.error('Error fetching class:', error);
+                alert('Could not load class data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClass();
+    }, [classId]);
 
     const [students, setStudents] = useState<Student[]>([
         { firstName: '', lastName: '' },
     ]);
 
-    // Handle input change
     const handleChange = (index: number, field: keyof Student, value: string) => {
         const updated = [...students];
         updated[index][field] = value;
         setStudents(updated);
     };
 
-    // Add new empty student row
     const addStudent = () => {
         setStudents([...students, { firstName: '', lastName: '' }]);
     };
 
-    // Remove a student row
     const removeStudent = (index: number) => {
         const updated = students.filter((_, i) => i !== index);
         setStudents(updated);
     };
 
-    // Submit form
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
-            const res = await fetch('https://jsonplaceholder.typicode.com/posts', { // Placeholder, change
+            const res = await fetch('http://127.0.0.1:5000/api/classes', { // Placeholder, change
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(students),
@@ -59,11 +88,19 @@ const AddStudentsPage = () => {
 
     };
 
+    if (loading) {
+        return (
+            <div className="background flex items-center justify-center">
+                Nalagam podatke o razredu...
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-            <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-2xl">
-                <h1 className="text-2xl font-bold mb-6 text-center text-gray-700">
-                    Dodajanje učencov v razred {classId}
+        <div className="background flex items-center justify-center">
+            <div className="section-dark w-2xl">
+                <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
+                    Dodajanje učencov v razred {classData.class_name}
                 </h1>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {students.map((student, index) => (
@@ -73,7 +110,7 @@ const AddStudentsPage = () => {
                                 placeholder="Ime"
                                 value={student.firstName}
                                 onChange={(e) => handleChange(index, 'firstName', e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700"
+                                className="input-text"
                                 required
                             />
                             <input
@@ -81,7 +118,7 @@ const AddStudentsPage = () => {
                                 placeholder="Priimek"
                                 value={student.lastName}
                                 onChange={(e) => handleChange(index, 'lastName', e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700"
+                                className="input-text"
                                 required
                             />
                             {students.length > 1 && (
@@ -100,14 +137,14 @@ const AddStudentsPage = () => {
                         <button
                             type="button"
                             onClick={addStudent}
-                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+                            className="btn bg-yellow-100 text-black"
                         >
                             Dodaj učenca
                         </button>
 
                         <button
                             type="submit"
-                            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+                            className="btn bg-purple-200 text-black"
                         >
                             Potrdi
                         </button>

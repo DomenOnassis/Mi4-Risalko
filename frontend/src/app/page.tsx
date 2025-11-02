@@ -4,19 +4,19 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const router = useRouter();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900">
+    <div className="background">
       <main className="container mx-auto px-4 py-16">
         <div className="text-center mb-16">
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-outline-dark text-[110px] font-bold mb-6 bg-gradient-to-r from-purple-200 via-pink-200 to-yellow-300 bg-clip-text text-transparent">
             Risalko
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             Kjer zgodbe oživijo skozi otroško domišljijo in umetnost
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="section-gray">
             <div className="text-4xl mb-4">📖</div>
             <h2 className="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">
               Preberi zgodbe
@@ -27,7 +27,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="section-gray">
             <div className="text-4xl mb-4">🎨</div>
             <h2 className="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">
               Riši in ustvari
@@ -38,7 +38,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="section-gray">
             <div className="text-4xl mb-4">✨</div>
             <h2 className="text-2xl font-semibold mb-3 text-gray-800 dark:text-gray-100">
               Ustvarjajte skupaj
@@ -51,7 +51,7 @@ export default function Home() {
         </div>
 
         <div className="text-center">
-          <div className="inline-block bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
+          <div className="section-dark">
             <h3 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-100">
               Pripravljeni začeti svojo ustvarjalno pot?
             </h3>
@@ -61,21 +61,21 @@ export default function Home() {
              <div className="space-y-4">
       <button
         onClick={() => router.push("/register")}
-        className="cursor-pointer bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold px-10 py-3 rounded-full hover:from-pink-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+        className="btn bg-gradient-to-r from-purple-200 via-pink-200 to-yellow-300 text-black"
       >
-        🪄 Registriraj se
+        Registriraj se
       </button>
 
       <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
         <button
           onClick={() => router.push("/login-student")}
-          className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-8 py-3 rounded-full hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+          className="btn bg-yellow-100 text-black"
         >
           Prijavi se kot učenec
         </button>
         <button
           onClick={() => router.push("/login-teacher")}
-          className="cursor-pointer bg-gradient-to-r from-blue-300 to-purple-300 text-white font-semibold px-8 py-3 rounded-full hover:from-blue-400 hover:to-purple-400 transition-all shadow-lg hover:shadow-xl"
+          className="btn bg-purple-100 text-black"
         >
           Prijavi se kot učitelj
         </button>
