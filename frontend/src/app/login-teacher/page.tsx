@@ -1,6 +1,7 @@
 "use client";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,9 +32,9 @@ try {
         return;
       }
 
-      
-      router.push("/draw");
-
+      Cookies.set("userType", "teacher", { expires: 7 }); 
+      router.push("/classes");
+     
 
 
       setSuccess("Uporabnik uspešno ustvarjen!");
