@@ -3,9 +3,8 @@ from bson import json_util, ObjectId
 from db import Connection
 import validator
 from flask_cors import CORS
-
-import secrets
-import string
+from utils import generate_unique_code
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -49,15 +48,7 @@ def get_users():
     populate = request.args.get("populate", False)
     
     if populate:
-        pipeline = [                
-            {"$lookup": {
-                        "from": "stories",
-                        "localField": "stories",
-                        "foreignField": "_id",
-                        "as": "stories"
-                    }
-            },     
-        ]
+        pipeline = []
         users = db.lookup_all("users",pipeline)
     else:
         users = db.find_all("users")
@@ -65,8 +56,8 @@ def get_users():
     return Response(
         json_util.dumps({"data": list(users)}),
         mimetype='application/json'
-    ), 200
-    
+    ), 200    
+
 @api.post("/users")
 def create_user():    
     data = request.get_json(silent=True)    
@@ -82,8 +73,13 @@ def create_user():
         })), 400
     
     user_type = data.get("type", "student")
+    
+    if user_type not in ["student", "teacher"]:
+        return Response(json_util.dumps({
+            'error': 'Invalid user type'
+        })), 400
 
-    user = {
+    user = {    
         'name': data.get("name"),
         'surname': data.get("surname"),
         'email': data.get("email"),
@@ -98,6 +94,7 @@ def create_user():
             code = generate_unique_code(8)
 
         user["code"] = code
+        user["paragraphs"] = []        
 
     db.insert("users", user)    
    
@@ -132,6 +129,103 @@ def delete_user(user_id):
         mimetype='application/json'
     ), 200
 
+@api.post("/users/<user_id>/paragraphs")
+def add_paragraph(user_id):
+    data = request.get_json()
+
+    is_valid, message = validator.validate_required_fields(data, ["story_id", "content"])
+
+    if not is_valid:
+        return Response( json_util.dumps({
+            'error': message
+        })), 400
+
+    try:
+        user_object_id = ObjectId(user_id)
+        story_object_id = ObjectId(data.get("story_id"))
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid id format'})), 400
+
+    paragraph = {
+        'story_id': story_object_id,
+        'content': data.get("content"),
+        'drawing': data.get("drawing", None),
+        'order': data.get("order", 0)
+    }
+
+    # insert paragraph document into dedicated collection
+    inserted_id = db.insert("paragraphs", paragraph)
+
+    if inserted_id is None:
+        return Response(json_util.dumps({'error': 'Could not create paragraph'})), 400
+
+    # attach the new _id back to the paragraph object for response
+    paragraph['_id'] = inserted_id
+
+    # push reference to student's paragraphs array
+    res = db.update_one("users", {'paragraphs': inserted_id}, {'_id': user_object_id}, append_array=True)
+
+    if res is None:
+        # try to clean up inserted paragraph to avoid orphans
+        try:
+            db.delete("paragraphs", {'_id': inserted_id})
+        except Exception:
+            pass
+        return Response(json_util.dumps({'error': 'Could not assign paragraph to user'})), 400
+
+    return Response(
+        json_util.dumps({"data": paragraph}), mimetype='application/json'
+    ), 200
+
+@api.patch("/paragraphs/<paragraph_id>")
+def update_paragraph(paragraph_id):
+    data = request.get_json()
+
+    if not data:
+        return Response(json_util.dumps({
+            'error': "No data provided"
+        })), 400
+
+    try:
+        paragraph_object_id = ObjectId(paragraph_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid id format'}), 400)
+
+    update_fields = {}
+
+    if data.get("story_id") is not None:
+        try:
+            update_fields['story_id'] = ObjectId(data.get("story_id"))
+        except Exception:
+            return Response(json_util.dumps({'error': 'Invalid story_id format'}), 400)
+
+    if "drawing" in data:
+        update_fields['drawing'] = data.get("drawing")
+
+    if data.get("content") is not None:
+        update_fields['content'] = data.get("content")
+
+    if data.get("order") is not None:
+        update_fields['order'] = data.get("order")
+
+    if not update_fields:
+        return Response(json_util.dumps({'error': 'No fields to update'}), 400)
+
+    res = db.update_one(
+        "paragraphs",
+        update_fields,
+        {'_id': paragraph_object_id},
+        append_array=False
+    )
+
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not update paragraph'})), 400
+
+    return Response(
+        json_util.dumps({"data": res}),
+        mimetype='application/json'
+    ), 200
+    
 #Stories  
 @api.get("/stories")
 def get_stories():
@@ -146,36 +240,76 @@ def get_stories():
 def create_story():
     data = request.get_json()
         
-    is_valid, message = validator.validate_required_fields(data, ["title", "author", "short_description", "content", "teacher_id"])
+    is_valid, message = validator.validate_required_fields(data, ["title", "author", "short_description", "content"])
     
     if not is_valid:
         return Response( json_util.dumps({
             'error': message
         })), 400
-        
-    teacher_id = data.get("teacher_id")
-    
+            
     story = {
         'title': data.get("title"),
         'author': data.get("author"),
         'short_description': data.get("short_description"),
         'content': data.get('content'),
+        'is_finished': False,
     }
-    
-    try:
-        teacher_object_id = ObjectId(teacher_id)
-    except Exception:
-        return Response( json_util.dumps({'error': 'Invalid teacher_id format'})), 400
-    
+
     inserted_story = db.insert("stories", story)    
-    
-    update_user = db.update_one("users", {'stories': inserted_story}, {'_id': teacher_object_id}, append_array=True)
-    
-    if(not update_user):
-        return Response(json_util.dumps({'error': 'Could not append story to user'})), 400
+    if inserted_story is None:
+        return Response( json_util.dumps({'error': 'Could not create story'})), 400    
            
     return Response(
         json_util.dumps({"data": story}),
+        mimetype='application/json'
+    ), 200
+    
+@api.patch("/stories/<story_id>")
+def update_story(story_id):
+    data = request.get_json()
+    
+    if not data:
+        return Response(json_util.dumps({
+            'error': "No data provided"
+        }), 400)
+    
+    update_fields = {}
+
+    if data.get("title") is not None:
+        update_fields['title'] = data.get("title")
+
+    if data.get("author") is not None:
+        update_fields['author'] = data.get("author")
+
+    if data.get("short_description") is not None:
+        update_fields['short_description'] = data.get("short_description")
+
+    if data.get("content") is not None:
+        update_fields['content'] = data.get("content")
+
+    if data.get("is_finished") is not None:
+        update_fields['is_finished'] = data.get("is_finished")
+
+    if not update_fields:
+        return Response(json_util.dumps({'error': 'No fields to update'}), 400)        
+           
+    try:
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid story_id format'})), 400    
+
+    res = db.update_one(
+        "stories",
+        update_fields,  
+        {'_id': story_object_id},
+        append_array=False 
+    )
+        
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not update story'})), 400
+
+    return Response(
+        json_util.dumps({"data": res}),
         mimetype='application/json'
     ), 200
     
@@ -192,7 +326,7 @@ def delete_story(story_id):
     if res is None:
         return Response( json_util.dumps({'error': 'Could not delete story'})), 400
     
-    refs_ref = db.delete_ref_from_array("users",  "stories", story_object_id)
+    refs_ref = db.delete_ref_from_array("classes", "stories", story_object_id)
 
     if refs_ref is None:
         return Response( json_util.dumps({'error': 'Could not delete refs'})), 400
@@ -221,8 +355,35 @@ def get_classes():
                         "foreignField": "_id",
                         "as": "teacher"
                     }
-            }
-        ]
+            },
+            {"$lookup": {
+                        "from": "stories",
+                        "localField": "stories",
+                        "foreignField": "_id",
+                        "as": "stories"
+                    }
+            }, 
+            # populate finalized_stories.story_id by matching to the already-looked-up stories array
+            {"$addFields": {
+                        "finalized_stories": {
+                            "$map": {
+                                "input": {"$ifNull": ["$finalized_stories", []]},
+                                "as": "fs",
+                                "in": {
+                                    "story_id": {"$arrayElemAt": [{
+                                        "$filter": {
+                                            "input": "$stories",
+                                            "as": "s",
+                                            "cond": {"$eq": ["$$s._id", "$$fs.story_id"]}
+                                        }
+                                    }, 0]},
+                                    "images": "$$fs.images"
+                                }
+                            }
+                        }
+                    }
+            },
+        ] 
         classes = db.lookup_all("classes",pipeline)
 
     else:
@@ -237,30 +398,106 @@ def get_classes():
 def create_class():
     data = request.get_json()
         
-    is_valid, message = validator.validate_required_fields(data, ["students", "teacher"])
+    is_valid, message = validator.validate_required_fields(data, ["teacher", "class_name"])
     
     if not is_valid:
         return Response(json_util.dumps({
             'error': message
         })), 400
     
-    user = {
-        'students': data.get("students"),
-        'teacher': data.get("teacher"),   
-    }
+    try:
+        finalized_stories_input = data.get("finalized_stories", [])
+        finalized_stories = []
+        for fd in finalized_stories_input:
+            story_id_raw = fd.get("story_id") if isinstance(fd, dict) else None
+            images = fd.get("images", []) if isinstance(fd, dict) else []
+            if story_id_raw is None:
+                continue
+            finalized_stories.append({
+                "story_id": ObjectId(story_id_raw),
+                "images": list(images)
+            })
+
+        class_data = {
+            'students': [ObjectId(student_id) for student_id in data.get("students", [])],
+            'class_name': data.get("class_name"),
+            'stories': [ObjectId(story_id) for story_id in data.get("stories", [])],
+            'teacher': ObjectId(data.get("teacher")),
+            'finalized_stories': finalized_stories
+        }
+
+        db.insert("classes", class_data)    
     
-    db.insert("classes", user)    
-   
+        return Response(
+            json_util.dumps({"data": class_data}),
+            mimetype='application/json'
+        ), 200
+        
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid id format'})), 400
+
+@api.patch("/classes/<class_id>")
+def update_class(class_id):
+    data = request.get_json()
+    
+    if not data:
+        return Response(json_util.dumps({
+            'error': "No data provided"
+        }), 400)
+    
+    update_fields = {}
+    try:
+        
+        if data.get("class_name") is not None:
+            update_fields['class_name'] = data.get("class_name")
+
+        if data.get("students") is not None:
+            update_fields['students'] = [ObjectId(student_id) for student_id in data.get("students", [])]
+
+        if data.get("teacher") is not None:
+            update_fields['teacher'] = ObjectId(data.get("teacher"))
+
+        if data.get("stories") is not None:                    
+            update_fields['stories'] = [ObjectId(story_id) for story_id in data.get("stories", [])]
+
+        if data.get("finalized_stories") is not None:
+            fd_in = data.get("finalized_stories", [])
+            fd_out = []
+            for fd in fd_in:
+                if not isinstance(fd, dict):
+                    continue
+                sid = fd.get("story_id")
+                images = fd.get("images", [])
+                if sid is None:
+                    continue
+                fd_out.append({
+                    "story_id": ObjectId(sid),
+                    "images": list(images)
+                })
+            update_fields['finalized_stories'] = fd_out
+
+        if not update_fields:
+            return Response(json_util.dumps({'error': 'No fields to update'}), 400)        
+           
+        class_object_id = ObjectId(class_id)
+    except Exception:
+        return Response( json_util.dumps({'error': 'Invalid id format'})), 400    
+
+    res = db.update_one(
+        "classes",
+        update_fields,  
+        {'_id': class_object_id},
+        append_array=False 
+    )
+        
+    if res is None:
+        return Response( json_util.dumps({'error': 'Could not update class'})), 400
+
     return Response(
-        json_util.dumps({"data": user}),
+        json_util.dumps({"data": res}),
         mimetype='application/json'
     ), 200
-    
-# Create unique code
-def generate_unique_code(length=8):
-    chars = string.ascii_uppercase + string.digits
-    return ''.join(secrets.choice(chars) for _ in range(length))
-  
+      
 @api.delete("/classes/<class_id>")
 def delete_class(class_id):
     
@@ -278,6 +515,132 @@ def delete_class(class_id):
         json_util.dumps({"data": class_id}),
         mimetype='application/json'
     ), 200
+
+
+@api.get("/classes/<class_id>")
+def get_class(class_id):
+    populate = request.args.get("populate", False)
+
+    try:
+        class_object_id = ObjectId(class_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid class_id format'})), 400
+
+    if populate:
+        pipeline = [
+            {"$match": {"_id": class_object_id}},
+            {"$lookup": {
+                        "from": "users",
+                        "localField": "students",
+                        "foreignField": "_id",
+                        "as": "students"
+                    }
+            },
+            {"$lookup": {
+                        "from": "users",
+                        "localField": "teacher",
+                        "foreignField": "_id",
+                        "as": "teacher"
+                    }
+            },
+            {"$lookup": {
+                        "from": "stories",
+                        "localField": "stories",
+                        "foreignField": "_id",
+                        "as": "stories"
+                    }
+            },
+            # populate finalized_stories.story_id by matching to the already-looked-up stories array
+            {"$addFields": {
+                        "finalized_stories": {
+                            "$map": {
+                                "input": {"$ifNull": ["$finalized_stories", []]},
+                                "as": "fs",
+                                "in": {
+                                    "story_id": {"$arrayElemAt": [{
+                                        "$filter": {
+                                            "input": "$stories",
+                                            "as": "s",
+                                            "cond": {"$eq": ["$$s._id", "$$fs.story_id"]}
+                                        }
+                                    }, 0]},
+                                    "images": "$$fs.images"
+                                }
+                            }
+                        }
+                    }
+            },
+        ]
+
+        classes = db.lookup_all("classes", pipeline)
+        if not classes:
+            return Response(json_util.dumps({'error': 'Class not found'})), 404
+
+        cls = classes[0]
+
+    else:
+        cls = db.find_one("classes", {"_id": class_object_id})
+
+    if not cls:
+        return Response(json_util.dumps({'error': 'Class not found'})), 404
+
+    return Response(
+        json_util.dumps({"data": cls}),
+        mimetype='application/json'
+    ), 200
+
+
+@api.post("/classes/<class_id>/finalized_stories")
+def add_finalized_story(class_id):
+    data = request.get_json()
+    if not data:
+        return Response(json_util.dumps({'error': 'No data provided'})), 400
+
+    try:
+        class_object_id = ObjectId(class_id)
+        story_object_id = ObjectId(data.get('story_id'))
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid id format'})), 400
+
+    images = []
+    if data.get('images') is not None:
+        images = list(data.get('images', []))
+    elif data.get('image') is not None:
+        images = [data.get('image')]
+
+    entry = {
+        'story_id': story_object_id,
+        'images': images
+    }
+
+    res = db.update_one('classes', {'finalized_stories': entry}, {'_id': class_object_id}, append_array=True)
+
+    if res is None:
+        return Response(json_util.dumps({'error': 'Could not add finalized story entry'})), 400
+
+    return Response(json_util.dumps({'data': entry}), mimetype='application/json'), 200
+
+
+@api.post("/classes/<class_id>/finalized_stories/<story_id>/images")
+def append_finalized_story_image(class_id, story_id):
+    data = request.get_json()
+    if not data or data.get('image') is None:
+        return Response(json_util.dumps({'error': 'No image provided'})), 400
+
+    try:
+        class_object_id = ObjectId(class_id)
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid id format'})), 400
+
+    image = data.get('image')
+
+    res = db.update_one('classes', {'finalized_stories.$.images': image}, {'_id': class_object_id, 'finalized_stories.story_id': story_object_id}, append_array=True)
+
+    if res is None:
+        return Response(json_util.dumps({'error': 'Could not append image; entry may not exist'})), 400
+
+    return Response(json_util.dumps({'data': True}), mimetype='application/json'), 200
     
 
 if __name__=="__main__":
