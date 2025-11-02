@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Cookies from "js-cookie";
 
 const ClassPage = () => {
   type Story = {
@@ -12,11 +13,18 @@ const ClassPage = () => {
   };
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userType, setUserType] = useState<string | null>(null);
   const params = useParams();
   const classId = params.classId;
   const [activeTab, setActiveTab] = useState<"workshop" | "finished">(
     "workshop"
   );
+useEffect(() => {
+  const type = Cookies.get("userType");
+  setUserType(type || null); 
+}, []);
+
+
 
   useEffect(() => {
     const fetchStories = async () => {
@@ -40,20 +48,33 @@ const ClassPage = () => {
   }, []);
 
   if (loading) return <p>Nalaganje zgodb...</p>;
+// 🔹 Če je študent, pokažemo samo njegove zgodbe
+  const filteredStories =
+    userType === "student"
+      ? stories.filter((s) => {
+          // preprosto filtriranje po nečem (tu lahko dodaš dejansko logiko po ID-ju)
+          // če boš kasneje imel story_id pri študentu, filtriraj po njem
+          return true; // zdaj še vsi
+        })
+      : stories;
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Class ID: {classId}</h1>
 
-      <div className="mb-6">
-        <Link
-          href={`/classes/${classId}/addStudents`}
-          className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
-        >
-          Dodaj učenca
-        </Link>
-      </div>
+      {/* 🔹 Gumb "Dodaj učenca" samo za učitelja */}
+      {userType === "teacher" && (
+        <div className="mb-6">
+          <Link
+            href={`/classes/${classId}/addStudents`}
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+          >
+            Dodaj učenca
+          </Link>
+        </div>
+      )}
 
+      {/* 🔹 Zavihek "Dokončane zgodbe" samo za učitelja */}
       <div className="border-b border-gray-300 mb-4 flex gap-6">
         <button
           onClick={() => setActiveTab("workshop")}
@@ -66,16 +87,18 @@ const ClassPage = () => {
           Delavnica
         </button>
 
-        <button
-          onClick={() => setActiveTab("finished")}
-          className={`cursor-pointer pb-2 font-semibold ${
-            activeTab === "finished"
-              ? "text-blue-600 border-b-2 border-blue-600"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          Dokončane zgodbe
-        </button>
+        {userType === "teacher" && (
+          <button
+            onClick={() => setActiveTab("finished")}
+            className={`cursor-pointer pb-2 font-semibold ${
+              activeTab === "finished"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Dokončane zgodbe
+          </button>
+        )}
       </div>
 
       {activeTab === "workshop" && (
@@ -83,19 +106,24 @@ const ClassPage = () => {
           <div className="flex items-center gap-x-3 mb-6 pb-5">
             <h2 className="text-xl font-semibold">Aktivne zgodbe</h2>
 
-            {/*addStory */}
-            <Link
-              href={`/classes/${classId}/addStory`}
-              className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-full transition-colors text-lg"
-            >
-              +
-            </Link>
+            {/* 🔹 Gumb "+" samo za učitelja */}
+            {userType === "teacher" && (
+              <Link
+                href={`/classes/${classId}/addStory`}
+                className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-full transition-colors text-lg"
+              >
+                +
+              </Link>
+            )}
           </div>
 
-          <div className="cursor-pointer grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {stories.map((story) => (
-              <div
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {filteredStories.map((story) => (
+              <Link
                 key={typeof story._id === "string" ? story._id : story._id.$oid}
+                href={`/classes/${classId}/${
+                  typeof story._id === "string" ? story._id : story._id.$oid
+                }`}
                 className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow"
               >
                 <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
@@ -104,20 +132,20 @@ const ClassPage = () => {
                 <p className="text-sm text-gray-600 text-center line-clamp-3">
                   {story.short_description}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       )}
 
-      {activeTab === "finished" && (
+      {activeTab === "finished" && userType === "teacher" && (
         <div>
           <h2 className="text-xl font-semibold mb-3 pb-5">
             Tukaj učitelj vidi že dokončane zgodbe svojih učencev
           </h2>
 
           <div className="cursor-pointer grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {stories.map((story) => (
+            {filteredStories.map((story) => (
               <div
                 key={typeof story._id === "string" ? story._id : story._id.$oid}
                 className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center justify-center hover:shadow-lg transition-shadow"

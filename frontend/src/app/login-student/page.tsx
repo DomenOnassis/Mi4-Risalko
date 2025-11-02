@@ -1,13 +1,16 @@
 "use client";
 import { useState, FormEvent } from "react";
-
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 export default function LoginPage() {
+  const router = useRouter();
   const [key, setKey] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     console.log("FORM SUBMITTED!");
     e.preventDefault();
-
+    Cookies.set("userType", "student", { expires: 7 });
+    router.push("/classes");{/**classes/id/  vidi svoje zgodbe -> ko na zgodbo klikne vidi paragraph, in ko klikne na exceprt lahko riše*/}
     console.log("key:", key);
   }
 
