@@ -25,11 +25,28 @@ const Classes = () => {
     e.preventDefault();
 
     try {
-      const placeholderTeacher = '68f2abbbf05e7dde3d965491';
+      let teacherId = '68f2abbbf05e7dde3d965491';
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          const u = JSON.parse(stored);
+          const raw = u._id || u.id || teacherId;
+          if (raw && typeof raw === 'object') {
+            teacherId = raw.$oid || raw.toString() || teacherId;
+          } else {
+            teacherId = String(raw);
+          }
+        }
+      } catch (e) {
+        // ignore and use placeholder
+      }
 
       const payload = {
-        ...classData,
-        teacher: placeholderTeacher,
+        class_name: classData.className,
+        color: classData.color,
+        teacher: teacherId,
+        students: [],
+        stories: [],
       };
 
       const res = await fetch('http://127.0.0.1:5000/api/classes', {

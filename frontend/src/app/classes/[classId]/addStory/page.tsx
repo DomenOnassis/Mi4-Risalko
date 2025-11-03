@@ -10,6 +10,7 @@ const AddStoryPage = () => {
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [shortDescription, setShortDescription] = useState('');
   const [content, setContent] = useState('');
   const [uploadMethod, setUploadMethod] = useState<'text' | 'txt'>('text');
   const [txtFile, setTxtFile] = useState<File | null>(null);
@@ -72,10 +73,13 @@ const AddStoryPage = () => {
         storyContent = txtContent;
       }
 
+      // Store story data with all required backend fields
       const storyData = {
         title,
         author,
+        shortDescription,
         content: storyContent,
+        fullText: storyContent, // Keep fullText for paragraph extraction
       };
 
       sessionStorage.setItem('newStory', JSON.stringify(storyData));
@@ -138,6 +142,22 @@ const AddStoryPage = () => {
                 required
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Kratek opis
+              </label>
+              <textarea
+                value={shortDescription}
+                onChange={(e) => setShortDescription(e.target.value)}
+                placeholder="Vnesi kratek opis zgodbe (opciono)..."
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100 font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Dolžina: {shortDescription.length} znakov
+              </p>
             </div>
 
             <div>

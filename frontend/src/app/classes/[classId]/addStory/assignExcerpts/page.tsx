@@ -11,8 +11,11 @@ interface Excerpt {
 }
 
 interface Student {
-  id: string;
+  _id: string | { $oid: string };
   name: string;
+  surname: string;
+  email?: string;
+  code?: string;
 }
 
 const AssignExcerptsPage = () => {
@@ -24,6 +27,8 @@ const AssignExcerptsPage = () => {
   const [excerpts, setExcerpts] = useState<Excerpt[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [assignmentMode, setAssignmentMode] = useState<'manual' | 'random'>('manual');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const storyStored = sessionStorage.getItem('newStory');
@@ -34,16 +39,28 @@ const AssignExcerptsPage = () => {
       setExcerpts(JSON.parse(excerptsStored));
     } else {
       router.push(`/classes/${classId}/addStory`);
+      return;
     }
 
-    setStudents([
-      { id: '1', name: 'Ana Novak' },
-      { id: '2', name: 'Luka Kovač' },
-      { id: '3', name: 'Eva Marić' },
-      { id: '4', name: 'Matej Horvat' },
-      { id: '5', name: 'Nina Krajnc' },
-      { id: '6', name: 'Žan Golob' },
-    ]);
+    const fetchStudents = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/classes/${classId}?populate=true`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data = await res.json();
+        if (data.data && data.data.students) {
+          setStudents(data.data.students);
+        }
+      } catch (error) {
+        console.error("Napaka pri pridobivanju učencev:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
   }, [classId, router]);
 
   const handleManualAssign = (excerptId: string, studentId: string) => {
@@ -56,10 +73,15 @@ const AssignExcerptsPage = () => {
 
   const handleRandomAssign = () => {
     const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
-    const assigned = excerpts.map((excerpt, index) => ({
-      ...excerpt,
-      assignedTo: shuffledStudents[index % students.length].id,
-    }));
+    const assigned: Excerpt[] = excerpts.map((excerpt, index) => {
+      const studentRawId = shuffledStudents[index % students.length]._id;
+      const studentId: string = typeof studentRawId === 'string' ? studentRawId : (studentRawId as { $oid: string }).$oid;
+      
+      return {
+        ...excerpt,
+        assignedTo: studentId,
+      };
+    });
     setExcerpts(assigned);
   };
 
@@ -69,30 +91,139 @@ const AssignExcerptsPage = () => {
 
   const getStudentName = (studentId?: string) => {
     if (!studentId) return null;
-    return students.find(s => s.id === studentId)?.name;
+    const student = students.find(s => {
+      const id = typeof s._id === 'string' ? s._id : s._id.$oid;
+      return id === studentId;
+    });
+    return student ? `${student.name} ${student.surname}` : null;
   };
 
-  const handleFinish = () => {
-    const finalData = {
-      story: storyData,
-      excerpts: excerpts,
-      classId,
-    };
+  const handleFinish = async () => {
+    setSaving(true);
+    try {
+      const storyRes = await fetch('http://127.0.0.1:5000/api/stories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: storyData.title,
+          author: storyData.author || '',
+          short_description: storyData.shortDescription || '',
+          content: storyData.fullText || '',
+          is_finished: false,
+        }),
+      });
 
-    console.log('Final story with assignments:', finalData);
-    
-    alert(`✅ Zgodba "${storyData.title}" z ${excerpts.length} odlomki uspešno ustvarjena!\n\n(Opomba: Ni bila shranjena v bazo - povezava ni aktivna)`);
-    
-    sessionStorage.removeItem('newStory');
-    sessionStorage.removeItem('storyExcerpts');
-    
-    router.push(`/classes/${classId}`);
+      const storyResult = await storyRes.json();
+      let storyId: string | null = null;
+      if (storyResult.data && storyResult.data._id) {
+        storyId = typeof storyResult.data._id === 'string' ? storyResult.data._id : storyResult.data._id.$oid;
+      } else {
+        try {
+          const listRes = await fetch('http://127.0.0.1:5000/api/stories', { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+          const listJson = await listRes.json();
+          if (listJson.data && Array.isArray(listJson.data)) {
+            const match = listJson.data.find((s: any) => 
+              s.title === (storyData.title) && s.author === (storyData.author || '')
+            );
+            if (match && match._id) {
+              storyId = typeof match._id === 'string' ? match._id : match._id.$oid;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not fallback-find created story:', e);
+        }
+      }
+
+      if (!storyId) {
+        throw new Error('Napaka pri ustvarjanju zgodbe (ni ID)');
+      }
+
+      const paragraphPromises = excerpts.map(async (excerpt) => {
+        if (!excerpt.assignedTo) return null;
+
+        const res = await fetch(`http://127.0.0.1:5000/api/users/${excerpt.assignedTo}/paragraphs`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            story_id: storyId,
+            content: excerpt.text,
+            order: excerpt.order,
+            drawing: '',
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          console.error('Paragraph creation error:', err);
+          return null;
+        }
+        return await res.json();
+      });
+
+      const results = await Promise.all(paragraphPromises);
+      const successCount = results.filter(r => r !== null).length;
+      const assignedCount = excerpts.filter(e => e.assignedTo).length;
+      
+      if (successCount !== assignedCount) {
+        console.warn(`Only ${successCount} of ${assignedCount} paragraphs created`);
+      }
+
+      const classRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}?populate=true`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const classData = await classRes.json();
+
+      if (classData.data) {
+        const currentStories = classData.data.stories || [];
+        const storyIds = currentStories.map((s: any) => 
+          typeof s._id === 'string' ? s._id : s._id.$oid
+        );
+        
+        await fetch(`http://127.0.0.1:5000/api/classes/${classId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            stories: [...storyIds, storyId],
+          }),
+        });
+      }
+
+      alert(`✅ Zgodba "${storyData.title}" z ${assignedCount} odlomki uspešno ustvarjena!`);
+      
+      sessionStorage.removeItem('newStory');
+      sessionStorage.removeItem('storyExcerpts');
+      
+      router.push(`/classes/${classId}`);
+    } catch (error) {
+      console.error('Napaka pri shranjevanju zgodbe:', error);
+      alert('Napaka pri shranjevanju zgodbe. Poskusite znova.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (!storyData || excerpts.length === 0) {
+  if (loading || !storyData || excerpts.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Nalaganje...</p>
+      </div>
+    );
+  }
+
+  if (students.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-lg font-semibold mb-2">Ni učencev v tem razredu</p>
+          <p className="text-gray-600 mb-4">Prosimo dodajte učence pred dodeljevanjem odlomkov.</p>
+          <button
+            onClick={() => router.push(`/classes/${classId}/addStudents`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+          >
+            Dodaj učence
+          </button>
+        </div>
       </div>
     );
   }
@@ -190,11 +321,14 @@ const AssignExcerptsPage = () => {
                           className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                         >
                           <option value="">-- Izberi učenca --</option>
-                          {students.map((student) => (
-                            <option key={student.id} value={student.id}>
-                              {student.name}
-                            </option>
-                          ))}
+                          {students.map((student) => {
+                            const studentId = typeof student._id === 'string' ? student._id : student._id.$oid;
+                            return (
+                              <option key={studentId} value={studentId}>
+                                {student.name} {student.surname}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
                     ) : (
@@ -228,10 +362,10 @@ const AssignExcerptsPage = () => {
               </div>
               <button
                 onClick={handleFinish}
-                disabled={!allAssigned}
+                disabled={!allAssigned || saving}
                 className="bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {allAssigned ? '✅ Zaključi in shrani' : '⚠️ Dodeli vse odlomke za nadaljevanje'}
+                {saving ? '⏳ Shranjevanje...' : allAssigned ? '✅ Zaključi in shrani' : '⚠️ Dodeli vse odlomke za nadaljevanje'}
               </button>
             </div>
           </div>

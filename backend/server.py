@@ -225,6 +225,116 @@ def update_paragraph(paragraph_id):
         json_util.dumps({"data": res}),
         mimetype='application/json'
     ), 200
+
+@api.get("/paragraphs/<paragraph_id>")
+def get_paragraph(paragraph_id):
+    try:
+        paragraph_object_id = ObjectId(paragraph_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid paragraph_id format'}), 400)
+
+    paragraph = db.find_one("paragraphs", {"_id": paragraph_object_id})
+
+    if not paragraph:
+        return Response(json_util.dumps({'error': 'Paragraph not found'}), 404)
+
+    return Response(
+        json_util.dumps({"data": paragraph}),
+        mimetype='application/json'
+    ), 200
+
+@api.get("/stories/<story_id>/paragraphs")
+def get_story_paragraphs(story_id):
+    try:
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid story_id format'}), 400)
+
+    # Find all paragraphs for this story using MongoDB collection directly
+    try:
+        collection = db.db["paragraphs"]
+        paragraphs = list(collection.find({"story_id": story_object_id}))
+        
+        # Sort by order
+        sorted_paragraphs = sorted(paragraphs, key=lambda p: p.get('order', 0))
+
+        return Response(
+            json_util.dumps({"data": sorted_paragraphs}),
+            mimetype='application/json'
+        ), 200
+    except Exception as e:
+        print("Error fetching paragraphs:", e)
+        return Response(json_util.dumps({'error': 'Could not fetch paragraphs'}), 500)
+
+@api.delete("/paragraphs/<paragraph_id>")
+def delete_paragraph(paragraph_id):
+    try:
+        paragraph_object_id = ObjectId(paragraph_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid paragraph_id format'}), 400)
+
+    refs_res = db.delete_ref_from_array("users", "paragraphs", paragraph_object_id)
+    
+    res = db.delete("paragraphs", {'_id': paragraph_object_id})
+
+    if res is None:
+        return Response(json_util.dumps({'error': 'Could not delete paragraph'}), 400)
+
+    return Response(
+        json_util.dumps({"data": paragraph_id}),
+        mimetype='application/json'
+    ), 200
+
+@api.patch("/users/<user_id>")
+def update_user(user_id):
+    data = request.get_json()
+    
+    if not data:
+        return Response(json_util.dumps({'error': 'No data provided'}), 400)
+    
+    try:
+        user_object_id = ObjectId(user_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid user_id format'}), 400)
+
+    update_fields = {}
+
+    if data.get("name") is not None:
+        update_fields['name'] = data.get("name")
+
+    if data.get("surname") is not None:
+        update_fields['surname'] = data.get("surname")
+
+    if data.get("email") is not None:
+        update_fields['email'] = data.get("email")
+
+    if data.get("password") is not None:
+        update_fields['password'] = data.get("password")
+
+    if data.get("paragraphs") is not None:
+        # Convert paragraph IDs to ObjectIds
+        try:
+            update_fields['paragraphs'] = [ObjectId(p_id) for p_id in data.get("paragraphs", [])]
+        except Exception:
+            return Response(json_util.dumps({'error': 'Invalid paragraph_id format in paragraphs array'}), 400)
+
+    if not update_fields:
+        return Response(json_util.dumps({'error': 'No fields to update'}), 400)
+
+    res = db.update_one(
+        "users",
+        update_fields,
+        {'_id': user_object_id},
+        append_array=False
+    )
+
+    if res is None:
+        return Response(json_util.dumps({'error': 'Could not update user'}), 400)
+
+    return Response(
+        json_util.dumps({"data": res}),
+        mimetype='application/json'
+    ), 200
     
 #Stories  
 @api.get("/stories")

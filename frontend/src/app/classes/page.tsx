@@ -16,28 +16,52 @@ const Classes = () => {
   const [classes, setClasses] = useState<ClassType[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const teacherName = 'John Smith';
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherId, setTeacherId] = useState<string | null>(null);
 
   useEffect(() => {
+    const userStored = localStorage.getItem('user');
+    if (!userStored) {
+      router.push('/login-teacher');
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userStored);
+      const userId = user._id?.$oid || user._id || user.id;
+      setTeacherId(userId);
+      setTeacherName(`${user.name || ''} ${user.surname || ''}`);
+    } catch (e) {
+      console.error('Failed to parse user from localStorage', e);
+      router.push('/login-teacher');
+      return;
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (!teacherId) return;
+
     const fetchClasses = async () => {
       try {
-        const userId = '68f2abbbf05e7dde3d965491';
 
         const res = await fetch(
-          `http://127.0.0.1:5000/api/classes?user_id=${userId}&populate=true`
+          `http://127.0.0.1:5000/api/classes?populate=true`
         );
         if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
 
         const result = await res.json();
 
+        const teacherClasses = (result.data || []).filter((cls: any) => {
+          const clsTeacherId = cls.teacher?.[0]?._id?.$oid || cls.teacher?.[0]?._id || cls.teacher?.$oid || cls.teacher;
+          return clsTeacherId === teacherId;
+        });
+
         const normalized =
-          result.data?.map((cls: any) => ({
+          teacherClasses.map((cls: any) => ({
             ...cls,
             _id: cls._id?.$oid || cls._id,
-          })) || [];
+          }));
 
-          console.log(result);
-          console.log(normalized);
         setClasses(normalized);
       } catch (error) {
         console.error('Error fetching classes:', error);
@@ -47,7 +71,7 @@ const Classes = () => {
     };
 
     fetchClasses();
-  }, []);
+  }, [teacherId]);
 
   const handleEdit = (id: string) => {
     router.push(`/classes/${id}/editClass`);
