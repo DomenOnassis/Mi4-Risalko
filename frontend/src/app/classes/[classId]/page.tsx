@@ -53,7 +53,7 @@ const ClassPage = () => {
         const user = JSON.parse(userStored);
         setUserType(user.type || null);
         setUserId(user._id?.$oid || user._id || user.id);
-        const paragraphIds = (user.paragraphs || []).map((p: any) => 
+        const paragraphIds = (user.paragraphs || []).map((p: any) =>
           typeof p === 'string' ? p : p.$oid
         );
         setUserParagraphs(paragraphIds);
@@ -76,7 +76,7 @@ const ClassPage = () => {
         if (data.data) {
           const cls = data.data;
           setClassName(cls.class_name || '');
-          
+
           const classStories = cls.stories || [];
           setStories(classStories);
 
@@ -121,7 +121,7 @@ const ClassPage = () => {
 
   const handlePrevImage = () => {
     if (slideshowStory) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? slideshowStory.paragraphs.length - 1 : prev - 1
       );
     }
@@ -170,36 +170,42 @@ const ClassPage = () => {
         <div className="p-8">
           {/* Teacher Controls */}
           {isTeacher && (
-            <div className="mb-6">
+            <div className="mb-6 flex flex-wrap gap-4">
               <Link
                 href={`/classes/${classId}/addStudents`}
                 className="inline-block bg-sky-400 hover:bg-sky-500 text-text font-semibold py-2 px-4 rounded-lg transition-colors"
               >
                 + Dodaj učenca
               </Link>
+
+              <Link
+                href={`/classes/${classId}/viewStudents`}
+                className="inline-block bg-purple-400 hover:bg-purple-500 text-text font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                👥 Ogled učencev
+              </Link>
             </div>
           )}
+
 
           {/* Tabs */}
           <div className="border-b border-gray-300 mb-6 flex gap-6">
             <button
               onClick={() => setActiveTab("workshop")}
-              className={`cursor-pointer pb-2 font-semibold text-lg ${
-                activeTab === "workshop"
+              className={`cursor-pointer pb-2 font-semibold text-lg ${activeTab === "workshop"
                   ? "text-sky-500 border-b-4 border-sky-500"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               Delavnica
             </button>
 
             <button
               onClick={() => setActiveTab("finished")}
-              className={`cursor-pointer pb-2 font-semibold text-lg ${
-                activeTab === "finished"
+              className={`cursor-pointer pb-2 font-semibold text-lg ${activeTab === "finished"
                   ? "text-sky-500 border-b-4 border-sky-500"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               Dokončane
             </button>
@@ -221,9 +227,8 @@ const ClassPage = () => {
                   {stories.filter(s => !s.is_finished).map((story) => (
                     <Link
                       key={typeof story._id === "string" ? story._id : story._id.$oid}
-                      href={`/classes/${classId}/${
-                        typeof story._id === "string" ? story._id : story._id.$oid
-                      }`}
+                      href={`/classes/${classId}/${typeof story._id === "string" ? story._id : story._id.$oid
+                        }`}
                       className="card bg-sky-400 cursor-pointer hover:shadow-xl transition-shadow"
                     >
                       <h3 className="text-lg font-semibold text-text mb-2">
@@ -261,21 +266,20 @@ const ClassPage = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {finalizedStories.map((story, idx) => {
-                    const storyId = story.story_id 
+                    const storyId = story.story_id
                       ? (typeof story.story_id === "string" ? story.story_id : story.story_id.$oid)
                       : `story-${idx}`;
                     const hasParagraphs = story.paragraphs && story.paragraphs.length > 0;
-                    
+
                     return (
                       <button
                         key={storyId}
                         onClick={() => hasParagraphs && openSlideshow(story)}
                         disabled={!hasParagraphs}
-                        className={`card cursor-pointer hover:shadow-xl transition-shadow text-left ${
-                          hasParagraphs 
-                            ? 'bg-green-400' 
+                        className={`card cursor-pointer hover:shadow-xl transition-shadow text-left ${hasParagraphs
+                            ? 'bg-green-400'
                             : 'bg-gray-400 opacity-60 cursor-not-allowed'
-                        }`}
+                          }`}
                       >
                         <h3 className="text-lg font-semibold text-text mb-2">
                           {story.story?.title || 'Neznana zgodba'}
