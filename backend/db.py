@@ -10,7 +10,9 @@ DB_URI= os.getenv("DB_URI")
 
 class Connection:        
     def __init__(self, database):
-        client = MongoClient(DB_URI)
+        client = MongoClient(
+            DB_URI,
+        )
         self.db = client[database]
 
     def find_one(self, collection_name, filter_query):

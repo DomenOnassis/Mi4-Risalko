@@ -41,10 +41,9 @@ export default function RegisterPage() {
         return;
       }
 
-
-      router.push("/draw");
-
-
+      if (data.data) {
+        localStorage.setItem('user', JSON.stringify(data.data));
+      }
 
       setSuccess("Uporabnik uspešno ustvarjen!");
       setError(null);
@@ -53,15 +52,20 @@ export default function RegisterPage() {
       setEmail("");
       setPassword("");
       setConfirm("");
+
+      // Redirect to classes after a short delay to show success message
+      setTimeout(() => {
+        router.push("/classes");
+      }, 500);
     } catch (err) {
       setError("Napaka pri povezavi s strežnikom.");
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900">
-      <div className="bg-white/90 dark:bg-gray-800/80 p-10 rounded-2xl shadow-xl max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+    <div className="background min-h-screen flex items-center justify-center p-4">
+      <div className="section-dark max-w-md w-full">
+        <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Ustvari račun
         </h1>
 
@@ -78,7 +82,7 @@ export default function RegisterPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Ime
             </label>
             <input
@@ -86,12 +90,12 @@ export default function RegisterPage() {
               placeholder="vnesi ime"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Priimek
             </label>
             <input
@@ -99,12 +103,12 @@ export default function RegisterPage() {
               placeholder="vnesi priimek"
               value={surname}
               onChange={(e) => setSurname(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               E-pošta
             </label>
             <input
@@ -112,12 +116,12 @@ export default function RegisterPage() {
               placeholder="vnesi e-poštni naslov"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Geslo
             </label>
             <input
@@ -125,12 +129,12 @@ export default function RegisterPage() {
               placeholder="vnesi geslo"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Potrdi geslo
             </label>
             <input
@@ -138,21 +142,21 @@ export default function RegisterPage() {
               placeholder="ponovno vnesi geslo"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+              className="input-text"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 text-white font-semibold py-2 rounded-lg hover:from-pink-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg"
+            className="btn bg-yellow-100 text-text w-full"
           >
             Registracija
           </button>
         </form>
 
-        <p className="text-center text-gray-600 dark:text-gray-400 mt-6 text-sm">
+        <p className="text-center text-gray-200 mt-6 text-sm">
           Že imaš račun?{" "}
-          <a href="/login-teacher" className="text-purple-600 hover:underline">
+          <a href="/login-teacher" className="text-yellow-100 hover:underline font-semibold">
             Prijavi se
           </a>
         </p>

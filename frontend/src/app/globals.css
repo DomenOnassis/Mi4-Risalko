@@ -3,6 +3,51 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Primary & Secondary */
+  --color-primary: #3B82F6;    /* Vibrant blue, friendly */
+  --color-secondary: #fff1cd;  /* Warm yellow, playful accent */
+  --color-button: #ffdf76;
+  /* Backgrounds */
+  --color-bg: #F9FAFB;
+  --color-dark-container: #4d4d4d;          
+  --color-card: #FFFFFF;       /* Card background */
+  --color-bg-alt: #EFF6FF;     /* Subtle blue tint for sections */
+
+  /* Text */
+  --color-text: #1b1d20;       /* Dark for readability */
+  --color-text-muted: #535964;
+  --color-text-light: #fff3cc;
+
+  /* Playful / Segment colors */
+  --color-segment-1: #F87171;  /* Soft red */
+  --color-segment-2: #34D399;  /* Green */
+  --color-segment-3: #60A5FA;  /* Light blue */
+  --color-segment-4: #FCD34D;  /* Yellow */
+  --color-segment-5: #A78BFA;  /* Purple */
+  
+}
+@theme {
+  --color-primary: #3B82F6;    /* Vibrant blue, friendly */
+  --color-secondary: #fff1cd;  /* Warm yellow, playful accent */
+  --color-button: #ffdf76;
+  /* Backgrounds */
+  --color-bg: #F9FAFB;  
+  --color-dark-container: #4d4d4d;       /* Very light gray/white */
+  --color-card: #FFFFFF;       /* Card background */
+  --color-bg-alt: #EFF6FF;     /* Subtle blue tint for sections */
+
+  /* Text */
+  --color-text: #1b1d20;       /* Dark for readability */
+  --color-text-muted: #535964; /* Gray for secondary text */
+  --color-text-light: #fff3cc;
+
+  /* Playful / Segment colors */
+  --color-segment-1: #F87171;  /* Soft red */
+  --color-segment-2: #34D399;  /* Green */
+  --color-segment-3: #60A5FA;  /* Light blue */
+  --color-segment-4: #FCD34D;  /* Yellow */
+  --color-segment-5: #A78BFA;  /* Purple */
 }
 
 @theme inline {
@@ -22,5 +67,80 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive, Arial, Helvetica, sans-serif;
+}
+
+@layer components {
+  
+  .background {
+    @apply min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200;
+  }
+
+  .text-outline-light {
+    -webkit-text-stroke: 4px rgba(240, 240, 240, 0.63);
+    -webkit-text-fill-color: transparent;
+  }
+  .text-outline-dark {
+    -webkit-text-stroke: 4px rgba(41, 41, 41, 0.63);
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-text {
+    @apply font-bold text-center mb-6 bg-gradient-to-r from-purple-700 via-pink-600 to-orange-600 bg-clip-text text-transparent
+  }
+
+  /* Buttons */
+  .btn {
+    @apply cursor-pointer px-8 py-2 rounded-xl text-lg border-5 border-gray-400 hover:scale-105 transition;
+  }
+
+  .btn-primary {
+    @apply bg-[--color-primary] text-white hover:bg-indigo-700 px-4 py-2 shadow-sm hover:scale-105;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-100 text-gray-800 hover:bg-gray-200 px-4 py-2 shadow-sm;
+  }
+
+  .btn-danger {
+    @apply bg-[--color-danger] text-white hover:bg-red-600 px-4 py-2 shadow-sm;
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-2xl shadow-lg border border-gray-200/80 p-6 transition-all hover:shadow-2xl  hover:shadow-xl transition-all transform hover:scale-110 hover:rotate-2 border-4;
+  }
+
+  /* Input fields */
+  .input-text {
+    @apply w-full px-4 py-2 bg-gray-900 text-gray-100 border-2 border-gray-400 rounded-xl focus:border-purple-200 focus:outline-none;
+  }
+
+  /* Section containers */
+  .section-gray {
+    @apply p-8 bg-gray-800/80 rounded-2xl shadow-2xl border-5 border-white/60;
+  }
+  .section-dark {
+    @apply w-full bg-gray-800/90 rounded-2xl p-8 shadow-xl border-5 border-white/60;
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }

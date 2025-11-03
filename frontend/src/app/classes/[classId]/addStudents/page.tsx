@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 type Student = {
@@ -8,62 +8,153 @@ type Student = {
     lastName: string;
 };
 
+
+
 const AddStudentsPage = () => {
+    const [classData, setClassData] = useState({
+        class_name: ''
+    });
     const params = useParams();
     const classId = params.classId;
+
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+
+        if (!classId) return;
+
+        const fetchClass = async () => {
+            try {
+
+                const res = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`);
+                if (!res.ok) throw new Error('Failed to fetch class data');
+
+                const result = await res.json();
+                const cls = result.data;
+
+                setClassData({
+                    class_name: cls.class_name || '',
+                });
+            } catch (error) {
+                console.error('Error fetching class:', error);
+                alert('Could not load class data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClass();
+    }, [classId]);
 
     const [students, setStudents] = useState<Student[]>([
         { firstName: '', lastName: '' },
     ]);
 
-    // Handle input change
     const handleChange = (index: number, field: keyof Student, value: string) => {
         const updated = [...students];
         updated[index][field] = value;
         setStudents(updated);
     };
 
-    // Add new empty student row
     const addStudent = () => {
         setStudents([...students, { firstName: '', lastName: '' }]);
     };
 
-    // Remove a student row
     const removeStudent = (index: number) => {
         const updated = students.filter((_, i) => i !== index);
         setStudents(updated);
     };
 
-    // Submit form
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const validStudents = students.filter(s => s.firstName.trim() && s.lastName.trim());
+        
+        if (validStudents.length === 0) {
+            alert('Prosim dodajte vsaj enega učenca');
+            return;
+        }
+
         try {
-            const res = await fetch('https://jsonplaceholder.typicode.com/posts', { // Placeholder, change
-                method: 'POST',
+            const createdStudentIds: string[] = [];
+            
+            for (const student of validStudents) {
+                const email = `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}@student.risalko.si`;
+                const password = 'student123'; // Default password for students
+                
+                const res = await fetch('http://127.0.0.1:5000/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: student.firstName,
+                        surname: student.lastName,
+                        email: email,
+                        password: password,
+                        type: 'student'
+                    }),
+                });
+
+                const result = await res.json();
+                
+                if (!res.ok) {
+                    console.error('Failed to create student:', result.error);
+                    throw new Error(result.error || 'Failed to create student');
+                }
+                
+                const studentId = result.data?._id?.$oid || result.data?._id;
+                if (studentId) {
+                    createdStudentIds.push(studentId);
+                }
+            }
+
+            const classRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`);
+            const classData = await classRes.json();
+            
+            if (!classRes.ok) {
+                throw new Error('Failed to fetch class data');
+            }
+
+            const existingStudentIds = classData.data?.students?.map((s: any) => s._id?.$oid || s._id || s) || [];
+            
+            const allStudentIds = [...existingStudentIds, ...createdStudentIds];
+
+            const updateRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(students),
+                body: JSON.stringify({
+                    students: allStudentIds
+                }),
             });
 
-            const result = await res.json();
+            const updateResult = await updateRes.json();
 
-            if (!res.ok) throw new Error(result.error || 'Something went wrong');
+            if (!updateRes.ok) {
+                throw new Error(updateResult.error || 'Failed to update class');
+            }
 
-            console.log('Students for class', classId, students);
+            alert(`✅ Uspešno dodanih ${createdStudentIds.length} učencev v razred ${classData.data?.class_name || ''}`);
+            
             setStudents([{ firstName: '', lastName: '' }]);
 
         } catch (error) {
-            console.error('Error creating class:', error);
-            alert('Failed to create class');
+            console.error('Error adding students:', error);
+            alert(`Napaka pri dodajanju učencev: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
 
     };
 
+    if (loading) {
+        return (
+            <div className="background min-h-screen flex items-center justify-center">
+                <p className="text-text">Nalagam podatke o razredu...</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-            <div className="bg-white rounded-xl shadow-md p-8 w-full max-w-2xl">
-                <h1 className="text-2xl font-bold mb-6 text-center text-gray-700">
-                    Dodajanje učencov v razred {classId}
+        <div className="background min-h-screen flex items-center justify-center p-4">
+            <div className="section-dark max-w-2xl w-full">
+                <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
+                    Dodajanje učencov v razred {classData.class_name}
                 </h1>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {students.map((student, index) => (
@@ -73,7 +164,7 @@ const AddStudentsPage = () => {
                                 placeholder="Ime"
                                 value={student.firstName}
                                 onChange={(e) => handleChange(index, 'firstName', e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700"
+                                className="input-text"
                                 required
                             />
                             <input
@@ -81,14 +172,14 @@ const AddStudentsPage = () => {
                                 placeholder="Priimek"
                                 value={student.lastName}
                                 onChange={(e) => handleChange(index, 'lastName', e.target.value)}
-                                className="border border-gray-300 rounded-md px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700"
+                                className="input-text"
                                 required
                             />
                             {students.length > 1 && (
                                 <button
                                     type="button"
                                     onClick={() => removeStudent(index)}
-                                    className="text-red-500 hover:text-red-700 font-bold px-2"
+                                    className="text-red-300 hover:text-red-100 font-bold px-2 text-2xl"
                                 >
                                     ×
                                 </button>
@@ -96,25 +187,25 @@ const AddStudentsPage = () => {
                         </div>
                     ))}
 
-                    <div className="flex justify-between">
+                    <div className="flex gap-4 pt-2">
                         <button
                             type="button"
                             onClick={addStudent}
-                            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+                            className="btn bg-sky-400 text-text flex-1"
                         >
                             Dodaj učenca
                         </button>
 
                         <button
                             type="submit"
-                            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md transition-colors"
+                            className="btn bg-yellow-100 text-text flex-1"
                         >
                             Potrdi
                         </button>
                     </div>
                 </form>
             </div>
-        </div>//TODO: CSV button
+        </div>
     );
 };
 
