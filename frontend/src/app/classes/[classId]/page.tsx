@@ -15,7 +15,9 @@ const ClassPage = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [className, setClassName] = useState('');
+  const [userParagraphs, setUserParagraphs] = useState<string[]>([]);
   const params = useParams();
   const router = useRouter();
   const classId = params.classId;
@@ -29,6 +31,11 @@ const ClassPage = () => {
       try {
         const user = JSON.parse(userStored);
         setUserType(user.type || null);
+        setUserId(user._id?.$oid || user._id || user.id);
+        const paragraphIds = (user.paragraphs || []).map((p: any) => 
+          typeof p === 'string' ? p : p.$oid
+        );
+        setUserParagraphs(paragraphIds);
       } catch (e) {
         console.error('Failed to parse user from localStorage', e);
       }
@@ -70,6 +77,16 @@ const ClassPage = () => {
     );
   }
 
+  const isTeacher = userType === "teacher";
+  const isStudent = userType === "student";
+
+  // For students, determine if they have any paragraphs in a story
+  const hasStudentParagraphInStory = (storyId: string) => {
+    if (isTeacher) return true;
+    // Would need to fetch paragraph details to check, for now allow viewing
+    return true;
+  };
+
   return (
     <div className="background">
       <div className="mx-auto">
@@ -85,10 +102,12 @@ const ClassPage = () => {
               </button>
               <h1 className="text-3xl font-bold text-gray-200">{className || 'Razred'}</h1>
             </div>
-            <p className="text-gray-300 font-semibold text-lg">Zgodbe in učenci</p>
+            <p className="text-gray-300 font-semibold text-lg">
+              {isStudent ? 'Moje naloge' : 'Zgodbe in učenci'}
+            </p>
           </div>
 
-          {userType === "teacher" && (
+          {isTeacher && (
             <Link
               href={`/classes/${classId}/addStory`}
               className="btn bg-yellow-100 text-text"
@@ -100,7 +119,7 @@ const ClassPage = () => {
 
         <div className="p-8">
           {/* Teacher Controls */}
-          {userType === "teacher" && (
+          {isTeacher && (
             <div className="mb-6">
               <Link
                 href={`/classes/${classId}/addStudents`}
@@ -124,30 +143,32 @@ const ClassPage = () => {
               Delavnica
             </button>
 
-            {userType === "teacher" && (
-              <button
-                onClick={() => setActiveTab("finished")}
-                className={`cursor-pointer pb-2 font-semibold text-lg ${
-                  activeTab === "finished"
-                    ? "text-sky-500 border-b-4 border-sky-500"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Dokončane
-              </button>
-            )}
+            <button
+              onClick={() => setActiveTab("finished")}
+              className={`cursor-pointer pb-2 font-semibold text-lg ${
+                activeTab === "finished"
+                  ? "text-sky-500 border-b-4 border-sky-500"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Dokončane
+            </button>
           </div>
 
           {/* Active Stories */}
           {activeTab === "workshop" && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">Aktivne zgodbe</h2>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                {isStudent ? 'Moje naloge' : 'Aktivne zgodbe'}
+              </h2>
 
               {stories.length === 0 ? (
-                <p className="text-text-muted text-center py-8">Ni aktivnih zgodb. Ustvarite novo!</p>
+                <p className="text-text-muted text-center py-8">
+                  {isStudent ? 'Nimate dodeljenih nalogic.' : 'Ni aktivnih zgodb. Ustvarite novo!'}
+                </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {stories.map((story) => (
+                  {stories.filter(s => !s.is_finished).map((story) => (
                     <Link
                       key={typeof story._id === "string" ? story._id : story._id.$oid}
                       href={`/classes/${classId}/${
@@ -166,6 +187,11 @@ const ClassPage = () => {
                           Avtor: {story.author}
                         </p>
                       )}
+                      {isStudent && (
+                        <p className="text-xs text-text-muted mt-3 pt-3 border-t border-text-muted/30">
+                          📝 Tvoja naloga
+                        </p>
+                      )}
                     </Link>
                   ))}
                 </div>
@@ -174,10 +200,8 @@ const ClassPage = () => {
           )}
 
           {/* Finished Stories */}
-          {activeTab === "finished" && userType === "teacher" && (
+          {activeTab === "finished" && (
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-6">Dokončane zgodbe</h2>
-
               {stories.filter(s => s.is_finished).length === 0 ? (
                 <p className="text-text-muted text-center py-8">Ni dokončanih zgodb.</p>
               ) : (

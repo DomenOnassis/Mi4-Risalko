@@ -16,22 +16,38 @@ db = Connection("risalko")
 def login():
     data = request.get_json()
     
-    is_valid, message = validator.validate_required_fields(data, ["email", "password"])
-    
-    if not is_valid:
-        return Response( json_util.dumps({
-            'error': message
-        })), 400
-    
-    email = data.get("email")
-    password = data.get("password")
-    
-    user = db.find_one("users", {"email": email, "password": password})
-    
-    if not user:
-        return Response( json_util.dumps({
-            'error': 'User not found'
-        })), 404
+    if "code" in data:
+        is_valid, message = validator.validate_required_fields(data, ["code"])
+        
+        if not is_valid:
+            return Response( json_util.dumps({
+                'error': message
+            })), 400
+        
+        code = data.get("code")
+        user = db.find_one("users", {"code": code})
+        
+        if not user:
+            return Response( json_util.dumps({
+                'error': 'Napačen ključ'
+            })), 404
+    else:
+        is_valid, message = validator.validate_required_fields(data, ["email", "password"])
+        
+        if not is_valid:
+            return Response( json_util.dumps({
+                'error': message
+            })), 400
+        
+        email = data.get("email")
+        password = data.get("password")
+        
+        user = db.find_one("users", {"email": email, "password": password})
+        
+        if not user:
+            return Response( json_util.dumps({
+                'error': 'Napačna e-pošta ali geslo'
+            })), 404
     
     return Response(
         json_util.dumps({"data": user}),
