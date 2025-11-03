@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, LogOut } from 'lucide-react';
 
 type ClassType = {
   _id?: { $oid?: string } | string;
@@ -90,6 +90,11 @@ const Classes = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    router.push('/');
+  };
+
   return (
     <div className="background">
       <div className="mx-auto">
@@ -102,12 +107,21 @@ const Classes = () => {
             </p>
           </div>
 
-          <Link
-            href="/classes/createClass"
-            className="btn bg-yellow-100 text-text"
-          >
-            + Ustvari nov razred
-          </Link>
+          <div className="flex gap-4 items-center">
+            <Link
+              href="/classes/createClass"
+              className="btn bg-yellow-100 text-text"
+            >
+              + Ustvari nov razred
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 btn bg-red-500 hover:bg-red-600 text-white"
+            >
+              <LogOut size={20} />
+              Odjava
+            </button>
+          </div>
         </div>
 
         {loading ? (

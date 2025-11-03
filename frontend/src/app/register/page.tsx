@@ -41,10 +41,9 @@ export default function RegisterPage() {
         return;
       }
 
-
-      router.push("/draw");
-
-
+      if (data.data) {
+        localStorage.setItem('user', JSON.stringify(data.data));
+      }
 
       setSuccess("Uporabnik uspešno ustvarjen!");
       setError(null);
@@ -53,6 +52,11 @@ export default function RegisterPage() {
       setEmail("");
       setPassword("");
       setConfirm("");
+
+      // Redirect to classes after a short delay to show success message
+      setTimeout(() => {
+        router.push("/classes");
+      }, 500);
     } catch (err) {
       setError("Napaka pri povezavi s strežnikom.");
     }
