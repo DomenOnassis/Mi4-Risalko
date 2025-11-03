@@ -101,7 +101,7 @@ export default function ParagraphDrawPage() {
 
   if (loading) {
     return (
-      <div className="background">
+      <div className="background min-h-screen">
         <p className="text-text text-center pt-8">Nalaganje odlomka...</p>
       </div>
     );
@@ -109,15 +109,15 @@ export default function ParagraphDrawPage() {
 
   if (error || !paragraph) {
     return (
-      <div className="background">
+      <div className="background min-h-screen">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <p className="text-lg font-semibold text-red-600 mb-4">
+            <p className="text-lg font-semibold text-red-300 mb-4">
               {error || "Odlomek ni najden"}
             </p>
             <button
               onClick={() => router.back()}
-              className="bg-sky-400 hover:bg-sky-500 text-text font-semibold py-2 px-4 rounded-lg"
+              className="btn bg-sky-400 text-text"
             >
               ← Nazaj
             </button>
@@ -128,24 +128,24 @@ export default function ParagraphDrawPage() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200 dark:from-purple-900 dark:via-pink-900 dark:to-yellow-900 flex flex-col">
+    <div className="background h-screen flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 flex-shrink-0 bg-gradient-to-r from-sky-400 to-sky-500 border-b-4 border-dashed border-sky-600 shadow-md">
+      <div className="px-4 py-3 flex-shrink-0 bg-gray-700/90 border-b-4 border-dashed border-yellow-400 shadow-md">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 text-text hover:opacity-80 transition-opacity font-bold text-lg"
+            className="inline-flex items-center gap-2 text-yellow-100 hover:text-yellow-200 transition-colors font-bold text-lg"
           >
             <ArrowLeft size={20} />
             Nazaj
           </button>
           <div className="text-center flex-1">
-            <h1 className="text-xl font-bold text-text">Ilustriraj odlomek #{paragraph.order}</h1>
+            <h1 className="text-xl font-bold text-gray-100">Ilustriraj odlomek #{paragraph.order}</h1>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+            className="btn bg-yellow-100 text-text disabled:bg-gray-500 disabled:text-gray-700"
           >
             <Save size={20} />
             {saving ? "Shranjevanje..." : "Shrani"}
@@ -154,8 +154,8 @@ export default function ParagraphDrawPage() {
       </div>
 
       {/* Paragraph Text */}
-      <div className="px-4 py-3 flex-shrink-0 bg-white/80 backdrop-blur-sm border-b-2 border-gray-200">
-        <p className="text-gray-800 font-semibold text-center leading-relaxed">
+      <div className="px-4 py-3 flex-shrink-0 bg-white/10 backdrop-blur-sm border-b-2 border-gray-400/30">
+        <p className="text-gray-100 font-semibold text-center leading-relaxed">
           "{paragraph.content}"
         </p>
       </div>
@@ -166,7 +166,7 @@ export default function ParagraphDrawPage() {
       </div>
 
       {/* Footer info */}
-      <div className="px-4 py-2 flex-shrink-0 bg-gray-100/80 text-center text-sm text-gray-600 border-t border-gray-300">
+      <div className="px-4 py-2 flex-shrink-0 bg-gray-700/60 text-center text-sm text-gray-200 border-t border-gray-400/30">
         💡 Risaj svoj odlomek! Slika bo avtomatsko shranjena v bazo podatkov.
       </div>
     </div>

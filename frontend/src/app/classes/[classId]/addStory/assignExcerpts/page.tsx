@@ -205,21 +205,21 @@ const AssignExcerptsPage = () => {
 
   if (loading || !storyData || excerpts.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Nalaganje...</p>
+      <div className="background min-h-screen flex items-center justify-center">
+        <p className="text-text">Nalaganje...</p>
       </div>
     );
   }
 
   if (students.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-lg font-semibold mb-2">Ni učencev v tem razredu</p>
-          <p className="text-gray-600 mb-4">Prosimo dodajte učence pred dodeljevanjem odlomkov.</p>
+      <div className="background min-h-screen flex items-center justify-center p-6">
+        <div className="section-dark text-center rounded-2xl p-8">
+          <p className="text-lg font-semibold text-gray-100 mb-2">Ni učencev v tem razredu</p>
+          <p className="text-gray-300 mb-4">Prosimo dodajte učence pred dodeljevanjem odlomkov.</p>
           <button
             onClick={() => router.push(`/classes/${classId}/addStudents`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            className="btn bg-yellow-100 text-text"
           >
             Dodaj učence
           </button>
@@ -231,33 +231,33 @@ const AssignExcerptsPage = () => {
   const allAssigned = excerpts.every(e => e.assignedTo);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 p-6">
+    <div className="background min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors font-medium"
+            className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium"
           >
             ← Nazaj
           </button>
         </div>
 
-        <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-center mb-2 gradient-text">
           Dodeli odlomke učencem
         </h1>
-        <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
+        <p className="text-center text-gray-200 mb-8">
           {storyData.title} - {excerpts.length} odlomkov
         </p>
 
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6">
+        <div className="section-dark rounded-2xl p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex gap-4">
               <button
                 onClick={() => setAssignmentMode('manual')}
                 className={`py-2 px-6 rounded-lg font-semibold transition-all ${
                   assignmentMode === 'manual'
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    ? 'bg-yellow-100 text-text shadow-lg'
+                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
                 }`}
               >
                 ✋ Ročna dodelitev
@@ -266,8 +266,8 @@ const AssignExcerptsPage = () => {
                 onClick={() => setAssignmentMode('random')}
                 className={`py-2 px-6 rounded-lg font-semibold transition-all ${
                   assignmentMode === 'random'
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    ? 'bg-yellow-100 text-text shadow-lg'
+                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
                 }`}
               >
                 🎲 Naključna dodelitev
@@ -278,13 +278,13 @@ const AssignExcerptsPage = () => {
               <div className="flex gap-3">
                 <button
                   onClick={handleRandomAssign}
-                  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors shadow-md"
+                  className="btn bg-green-400 text-text"
                 >
                   🎲 Dodeli naključno
                 </button>
                 <button
                   onClick={clearAssignments}
-                  className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  className="btn bg-sky-400 text-text"
                 >
                   Počisti
                 </button>
@@ -293,7 +293,7 @@ const AssignExcerptsPage = () => {
           </div>
         </div>
 
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-6">
+        <div className="section-dark rounded-2xl p-6 mt-6">
           <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
             {excerpts.map((excerpt) => (
               <div
@@ -355,15 +355,15 @@ const AssignExcerptsPage = () => {
             ))}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-300 dark:border-gray-700">
+          <div className="mt-6 pt-6 border-t border-gray-400">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-gray-200">
                 Dodeljeno: {excerpts.filter(e => e.assignedTo).length} / {excerpts.length}
               </div>
               <button
                 onClick={handleFinish}
                 disabled={!allAssigned || saving}
-                className="bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn bg-green-400 text-text disabled:bg-gray-500 disabled:text-gray-700"
               >
                 {saving ? '⏳ Shranjevanje...' : allAssigned ? '✅ Zaključi in shrani' : '⚠️ Dodeli vse odlomke za nadaljevanje'}
               </button>

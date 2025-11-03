@@ -93,19 +93,19 @@ const AddStoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 p-6">
+    <div className="background min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-8">
+        <div className="section-dark rounded-2xl p-8">
           <div className="mb-6">
             <button
               onClick={() => router.back()}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors font-medium"
+              className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium"
             >
               ← Nazaj
             </button>
           </div>
 
-          <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-center mb-8 gradient-text">
             Dodaj novo zgodbo
           </h1>
 
@@ -117,7 +117,7 @@ const AddStoryPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Naslov zgodbe *
               </label>
               <input
@@ -126,12 +126,12 @@ const AddStoryPage = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Vnesi naslov zgodbe"
                 required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+                className="input-text"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Avtor *
               </label>
               <input
@@ -140,12 +140,12 @@ const AddStoryPage = () => {
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="Vnesi ime avtorja"
                 required
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100"
+                className="input-text"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-200 mb-2">
                 Kratek opis
               </label>
               <textarea
@@ -153,15 +153,15 @@ const AddStoryPage = () => {
                 onChange={(e) => setShortDescription(e.target.value)}
                 placeholder="Vnesi kratek opis zgodbe (opciono)..."
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100 font-mono text-sm"
+                className="input-text font-mono text-sm"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              <p className="text-xs text-gray-400 mt-2">
                 Dolžina: {shortDescription.length} znakov
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              <label className="block text-sm font-medium text-gray-200 mb-3">
                 Način vnosa vsebine *
               </label>
               <div className="flex gap-4 mb-4">
@@ -170,8 +170,8 @@ const AddStoryPage = () => {
                   onClick={() => setUploadMethod('text')}
                   className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                     uploadMethod === 'text'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      ? 'bg-yellow-100 text-text shadow-lg'
+                      : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
                   }`}
                 >
                   📝 Besedilo
@@ -181,8 +181,8 @@ const AddStoryPage = () => {
                   onClick={() => setUploadMethod('txt')}
                   className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
                     uploadMethod === 'txt'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      ? 'bg-yellow-100 text-text shadow-lg'
+                      : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
                   }`}
                 >
                   📄 .txt
@@ -192,7 +192,7 @@ const AddStoryPage = () => {
 
             {uploadMethod === 'text' ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                   Vsebina zgodbe *
                 </label>
                 <textarea
@@ -201,18 +201,18 @@ const AddStoryPage = () => {
                   placeholder="Vnesi ali prilepi vsebino zgodbe..."
                   required
                   rows={15}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100 font-mono text-sm"
+                  className="input-text font-mono text-sm"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-xs text-gray-400 mt-2">
                   Dolžina: {content.length} znakov
                 </p>
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-200 mb-2">
                   Naloži .txt datoteko *
                 </label>
-                <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center">
+                <div className="border-2 border-dashed border-gray-400 rounded-lg p-8 text-center">
                   <input
                     type="file"
                     accept=".txt"
@@ -224,7 +224,7 @@ const AddStoryPage = () => {
                   />
                   <label
                     htmlFor="txt-upload"
-                    className={`cursor-pointer inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg ${
+                    className={`cursor-pointer inline-block bg-yellow-100 text-text font-semibold py-3 px-6 rounded-lg hover:bg-yellow-200 transition-all shadow-md hover:shadow-lg ${
                       isReadingTxt ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -232,19 +232,19 @@ const AddStoryPage = () => {
                   </label>
                   
                   {txtFile && (
-                    <div className="mt-4 text-gray-700 dark:text-gray-300">
+                    <div className="mt-4 text-gray-200">
                       <p className="font-medium">Izbrana datoteka:</p>
                       <p className="text-sm">{txtFile.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-400">
                         {(txtFile.size / 1024).toFixed(2)} KB
                       </p>
                       {isReadingTxt && (
-                        <p className="text-sm text-blue-600 mt-2">
+                        <p className="text-sm text-yellow-100 mt-2">
                           ⏳ Branje .txt datoteke...
                         </p>
                       )}
                       {txtContent && !isReadingTxt && (
-                        <p className="text-sm text-green-600 mt-2">
+                        <p className="text-sm text-green-300 mt-2">
                           ✅ Besedilo uspešno naloženo ({txtContent.length} znakov)
                         </p>
                       )}
@@ -254,7 +254,7 @@ const AddStoryPage = () => {
 
                 {txtContent && (
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-200 mb-2">
                       Vsebina iz .txt datoteke:
                     </label>
                     <textarea
@@ -265,15 +265,15 @@ const AddStoryPage = () => {
                       }}
                       placeholder="Vsebina iz .txt datoteke se bo pojavila tukaj..."
                       rows={10}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none dark:bg-gray-900 dark:text-gray-100 font-mono text-sm"
+                      className="input-text font-mono text-sm"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    <p className="text-xs text-gray-400 mt-2">
                       Dolžina: {txtContent.length} znakov - Lahko uredite besedilo po potrebi
                     </p>
                   </div>
                 )}
 
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-xs text-gray-400 mt-2">
                   💡 Besedilo iz .txt datoteke bo prikazano za urejanje
                 </p>
               </div>
@@ -283,7 +283,7 @@ const AddStoryPage = () => {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold py-3 rounded-lg transition-colors"
+                className="btn bg-gray-600 hover:bg-gray-500 text-gray-200 flex-1"
                 disabled={isLoading}
               >
                 Prekliči
@@ -291,7 +291,7 @@ const AddStoryPage = () => {
               <button
                 type="submit"
                 disabled={isLoading || isReadingTxt || (uploadMethod === 'txt' && !txtContent)}
-                className="flex-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-semibold py-3 rounded-lg hover:from-blue-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn bg-yellow-100 text-text flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? '⏳ Ustvarjam...' : 
                  isReadingTxt ? '⏳ Branje .txt...' :

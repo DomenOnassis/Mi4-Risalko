@@ -63,8 +63,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="background flex items-center justify-center">
-      <div className="section-dark w-md">
+    <div className="background min-h-screen flex items-center justify-center p-4">
+      <div className="section-dark max-w-md w-full">
         <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Ustvari račun
         </h1>
@@ -82,7 +82,7 @@ export default function RegisterPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Ime
             </label>
             <input
@@ -95,7 +95,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Priimek
             </label>
             <input
@@ -108,7 +108,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               E-pošta
             </label>
             <input
@@ -121,7 +121,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Geslo
             </label>
             <input
@@ -134,7 +134,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Potrdi geslo
             </label>
             <input
@@ -148,15 +148,15 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="btn bg-gradient-to-r from-purple-200 via-pink-100 to-yellow-100 text-black w-full"
+            className="btn bg-yellow-100 text-text w-full"
           >
             Registracija
           </button>
         </form>
 
-        <p className="text-center text-gray-600 dark:text-gray-400 mt-6 text-sm">
+        <p className="text-center text-gray-200 mt-6 text-sm">
           Že imaš račun?{" "}
-          <a href="/login-teacher" className="text-yellow-100">
+          <a href="/login-teacher" className="text-yellow-100 hover:underline font-semibold">
             Prijavi se
           </a>
         </p>

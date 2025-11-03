@@ -292,7 +292,7 @@ export default function StoryPage() {
 
   if (loading) {
     return (
-      <div className="background">
+      <div className="background min-h-screen">
         <p className="text-text text-center pt-8">Nalaganje zgodbe...</p>
       </div>
     );
@@ -300,13 +300,13 @@ export default function StoryPage() {
 
   if (error || !data.story) {
     return (
-      <div className="background">
+      <div className="background min-h-screen">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <p className="text-lg font-semibold text-red-600 mb-4">{error || "Zgodba ni najdena"}</p>
+            <p className="text-lg font-semibold text-red-300 mb-4">{error || "Zgodba ni najdena"}</p>
             <button
               onClick={() => router.back()}
-              className="bg-sky-400 hover:bg-sky-500 text-text font-semibold py-2 px-4 rounded-lg"
+              className="btn bg-sky-400 text-text"
             >
               ← Nazaj
             </button>
@@ -320,7 +320,7 @@ export default function StoryPage() {
   const isStudent = userType === "student";
 
   return (
-    <div className="background">
+    <div className="background min-h-screen">
       <div className="mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
@@ -328,7 +328,7 @@ export default function StoryPage() {
             <div className="flex items-center gap-3 mb-2">
               <button
                 onClick={() => router.back()}
-                className="text-gray-300 hover:text-gray-100 transition-colors text-lg font-semibold"
+                className="text-yellow-100 hover:text-yellow-200 transition-colors text-lg font-semibold"
               >
                 ←
               </button>
@@ -351,7 +351,7 @@ export default function StoryPage() {
             <button
               onClick={handleFinalizeStory}
               disabled={isFinalizingStory}
-              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg"
+              className="btn bg-green-400 text-text disabled:bg-gray-500 disabled:text-gray-700"
             >
               {isFinalizingStory ? 'Zaključujem...' : '✓ Končaj slikanico'}
             </button>
