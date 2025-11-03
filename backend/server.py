@@ -266,7 +266,6 @@ def get_story_paragraphs(story_id):
     except Exception:
         return Response(json_util.dumps({'error': 'Invalid story_id format'}), 400)
 
-    # Find all paragraphs for this story using MongoDB collection directly
     try:
         collection = db.db["paragraphs"]
         paragraphs = list(collection.find({"story_id": story_object_id}))
@@ -767,6 +766,61 @@ def append_finalized_story_image(class_id, story_id):
         return Response(json_util.dumps({'error': 'Could not append image; entry may not exist'})), 400
 
     return Response(json_util.dumps({'data': True}), mimetype='application/json'), 200
+
+
+@api.post("/classes/<class_id>/finalize-story/<story_id>")
+def finalize_story(class_id, story_id):
+    """
+    Finalize a story by collecting all paragraphs with their drawings,
+    adding to finalized_stories, and removing from stories array.
+    """
+    try:
+        class_object_id = ObjectId(class_id)
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid id format'})), 400
+
+    try:
+        collection = db.db['paragraphs']
+        paragraphs = list(collection.find({"story_id": story_object_id}).sort("order", 1))
+
+        if not paragraphs:
+            return Response(json_util.dumps({'error': 'No paragraphs found for this story'})), 404
+
+        images = []
+        for paragraph in paragraphs:
+            drawing = paragraph.get('drawing')
+            if drawing:
+                images.append(drawing)
+
+        entry = {
+            'story_id': story_object_id,
+            'images': images
+        }
+
+        res_add = db.update_one(
+            'classes',
+            {'finalized_stories': entry},
+            {'_id': class_object_id},
+            append_array=True
+        )
+
+        if res_add is None:
+            return Response(json_util.dumps({'error': 'Could not add finalized story'})), 400
+
+        db.delete_ref_from_array('classes', 'stories', story_object_id)
+
+        return Response(
+            json_util.dumps({'data': {
+                'message': 'Story finalized successfully',
+                'images_count': len(images),
+                'entry': entry
+            }}),
+            mimetype='application/json'
+        ), 200
+    except Exception as e:
+        print("Error finalizing story:", e)
+        return Response(json_util.dumps({'error': 'Could not finalize story'})), 400
     
 
 if __name__=="__main__":

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const ClassPage = () => {
   type Story = {
@@ -12,18 +13,33 @@ const ClassPage = () => {
     author?: string;
     is_finished?: boolean;
   };
+
+  type FinalizedStory = {
+    story_id: string | { $oid: string };
+    images: string[];
+    story?: {
+      title: string;
+      short_description: string;
+      author?: string;
+    };
+  };
+
   const [stories, setStories] = useState<Story[]>([]);
+  const [finalizedStories, setFinalizedStories] = useState<FinalizedStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [className, setClassName] = useState('');
   const [userParagraphs, setUserParagraphs] = useState<string[]>([]);
-  const params = useParams();
-  const router = useRouter();
-  const classId = params.classId;
   const [activeTab, setActiveTab] = useState<"workshop" | "finished">(
     "workshop"
   );
+  const [slideshowStory, setSlideshowStory] = useState<FinalizedStory | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const params = useParams();
+  const router = useRouter();
+  const classId = params.classId;
 
   useEffect(() => {
     const userStored = localStorage.getItem('user');
@@ -58,6 +74,18 @@ const ClassPage = () => {
           
           const classStories = cls.stories || [];
           setStories(classStories);
+
+          // Set finalized stories with story details
+          const finalized = (cls.finalized_stories || []).map((fs: any) => ({
+            story_id: fs.story_id,
+            images: fs.images || [],
+            story: fs.story || {
+              title: 'Neznana zgodba',
+              short_description: '',
+              author: ''
+            }
+          }));
+          setFinalizedStories(finalized);
         }
       } catch (error) {
         console.error("Napaka pri pridobivanju podatkov razreda:", error);
@@ -80,11 +108,28 @@ const ClassPage = () => {
   const isTeacher = userType === "teacher";
   const isStudent = userType === "student";
 
-  // For students, determine if they have any paragraphs in a story
-  const hasStudentParagraphInStory = (storyId: string) => {
-    if (isTeacher) return true;
-    // Would need to fetch paragraph details to check, for now allow viewing
-    return true;
+  const handleNextImage = () => {
+    if (slideshowStory) {
+      setCurrentImageIndex((prev) => (prev + 1) % slideshowStory.images.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (slideshowStory) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? slideshowStory.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const openSlideshow = (story: FinalizedStory) => {
+    setSlideshowStory(story);
+    setCurrentImageIndex(0);
+  };
+
+  const closeSlideshow = () => {
+    setSlideshowStory(null);
+    setCurrentImageIndex(0);
   };
 
   return (
@@ -199,39 +244,124 @@ const ClassPage = () => {
             </div>
           )}
 
-          {/* Finished Stories */}
+          {/* Finalized Stories */}
           {activeTab === "finished" && (
             <div>
-              {stories.filter(s => s.is_finished).length === 0 ? (
-                <p className="text-text-muted text-center py-8">Ni dokončanih zgodb.</p>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                Dokončane slikanice
+              </h2>
+
+              {finalizedStories.length === 0 ? (
+                <p className="text-text-muted text-center py-8">Ni dokončanih slikanica.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {stories
-                    .filter(s => s.is_finished)
-                    .map((story) => (
-                      <div
-                        key={typeof story._id === "string" ? story._id : story._id.$oid}
-                        className="card bg-green-400"
+                  {finalizedStories.map((story, idx) => {
+                    const storyId = story.story_id 
+                      ? (typeof story.story_id === "string" ? story.story_id : story.story_id.$oid)
+                      : `story-${idx}`;
+                    const hasImages = story.images && story.images.length > 0;
+                    
+                    return (
+                      <button
+                        key={storyId}
+                        onClick={() => hasImages && openSlideshow(story)}
+                        disabled={!hasImages}
+                        className={`card cursor-pointer hover:shadow-xl transition-shadow text-left ${
+                          hasImages 
+                            ? 'bg-green-400' 
+                            : 'bg-gray-400 opacity-60 cursor-not-allowed'
+                        }`}
                       >
                         <h3 className="text-lg font-semibold text-text mb-2">
-                          {story.title}
+                          {story.story?.title || 'Neznana zgodba'}
                         </h3>
                         <p className="text-text-muted line-clamp-3">
-                          {story.short_description || "Brez opisa"}
+                          {story.story?.short_description || "Brez opisa"}
                         </p>
-                        {story.author && (
+                        {story.story?.author && (
                           <p className="text-sm text-text-muted mt-3 font-medium">
-                            Avtor: {story.author}
+                            Avtor: {story.story.author}
                           </p>
                         )}
-                      </div>
-                    ))}
+                        <p className="text-xs text-text-muted mt-3 pt-3 border-t border-text-muted/30">
+                          📚 {story.images?.length || 0} slik
+                        </p>
+                        {!hasImages && (
+                          <p className="text-xs text-red-600 font-semibold mt-2">
+                            Ni slik za prikaz
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Slideshow Modal */}
+      {slideshowStory && slideshowStory.images.length > 0 && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+          <button
+            onClick={closeSlideshow}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+          >
+            <X size={32} />
+          </button>
+
+          <div className="w-full h-full flex flex-col items-center justify-center px-4">
+            {/* Header */}
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-bold text-white mb-2">
+                {slideshowStory.story?.title}
+              </h2>
+              <p className="text-gray-300">
+                Slika {currentImageIndex + 1} od {slideshowStory.images.length}
+              </p>
+            </div>
+
+            {/* Image Container */}
+            <div className="relative w-full max-w-4xl h-96 flex items-center justify-center mb-6">
+              <img
+                src={slideshowStory.images[currentImageIndex]}
+                alt={`Slika ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+            </div>
+
+            {/* Navigation */}
+            <div className="flex items-center gap-8">
+              <button
+                onClick={handlePrevImage}
+                className="bg-sky-500 hover:bg-sky-600 text-white rounded-full p-3 transition-colors"
+                aria-label="Prejšnja slika"
+              >
+                <ChevronLeft size={32} />
+              </button>
+
+              {/* Progress Bar */}
+              <div className="w-32 h-2 bg-gray-600 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-sky-500 transition-all"
+                  style={{
+                    width: `${((currentImageIndex + 1) / slideshowStory.images.length) * 100}%`,
+                  }}
+                />
+              </div>
+
+              <button
+                onClick={handleNextImage}
+                className="bg-sky-500 hover:bg-sky-600 text-white rounded-full p-3 transition-colors"
+                aria-label="Naslednja slika"
+              >
+                <ChevronRight size={32} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

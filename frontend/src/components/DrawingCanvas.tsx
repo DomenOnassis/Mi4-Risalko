@@ -2,7 +2,12 @@
 
 import { useRef, useState, useEffect } from 'react';
 
-export default function DrawingCanvas() {
+interface DrawingCanvasProps {
+  onCanvasMount?: (canvas: HTMLCanvasElement) => void;
+  initialImage?: string | null;
+}
+
+export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#000000');
@@ -17,6 +22,10 @@ export default function DrawingCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    if (onCanvasMount) {
+      onCanvasMount(canvas);
+    }
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -38,8 +47,37 @@ export default function DrawingCanvas() {
 
       ctx.scale(dpiFactor, dpiFactor);
 
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (initialImage) {
+        const img = new Image();
+        img.onload = () => {
+          const canvasWidth = canvas.width / dpiFactor;
+          const canvasHeight = canvas.height / dpiFactor;
+          
+          const imgAspect = img.width / img.height;
+          const canvasAspect = canvasWidth / canvasHeight;
+          
+          let drawWidth = canvasWidth;
+          let drawHeight = canvasHeight;
+          
+          if (imgAspect > canvasAspect) {
+            drawHeight = canvasWidth / imgAspect;
+          } else {
+            drawWidth = canvasHeight * imgAspect;
+          }
+          
+          const x = (canvasWidth - drawWidth) / 2;
+          const y = (canvasHeight - drawHeight) / 2;
+          
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+          
+          ctx.drawImage(img, x, y, drawWidth, drawHeight);
+        };
+        img.src = initialImage;
+      } else {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width / dpiFactor, canvas.height / dpiFactor);
+      }
     };
 
     resizeCanvas();
@@ -49,7 +87,7 @@ export default function DrawingCanvas() {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, []);
+  }, [initialImage, onCanvasMount]);
 
   const saveState = () => {
     const canvas = canvasRef.current;
