@@ -1,17 +1,46 @@
 "use client";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+
 export default function LoginPage() {
   const router = useRouter();
   const [key, setKey] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     console.log("FORM SUBMITTED!");
     e.preventDefault();
-    Cookies.set("userType", "student", { expires: 7 });
-    router.push("/classes");{/**classes/id/  vidi svoje zgodbe -> ko na zgodbo klikne vidi paragraph, in ko klikne na exceprt lahko riše*/}
-    console.log("key:", key);
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: key,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Napaka pri prijavi študenta.");
+        setSuccess(null);
+        return;
+      }
+
+      if (data.data) {
+        localStorage.setItem('user', JSON.stringify(data.data));
+      }
+
+      setSuccess("Uspešno prijavljen!");
+      setError(null);
+      setKey("");
+
+      router.push("/classes");
+    } catch (err) {
+      setError("Napaka pri povezavi s strežnikom.");
+    }
   }
 
   return (
@@ -22,6 +51,17 @@ export default function LoginPage() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm text-center">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-100 text-green-700 p-3 rounded-lg text-sm text-center">
+              {success}
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="key"

@@ -1,7 +1,6 @@
 "use client";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,15 +31,16 @@ try {
         return;
       }
 
-      Cookies.set("userType", "teacher", { expires: 7 }); 
-      router.push("/classes");
-     
+      if (data.data) {
+        localStorage.setItem('user', JSON.stringify(data.data));
+      }
 
-
-      setSuccess("Uporabnik uspešno ustvarjen!");
+      setSuccess("Uporabnik uspešno prijavljen!");
       setError(null);
       setEmail("");
       setPassword("");
+
+      router.push("/classes");
     } catch (err) {
       setError("Napaka pri povezavi s strežnikom.");
     }

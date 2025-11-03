@@ -67,23 +67,77 @@ const AddStudentsPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const validStudents = students.filter(s => s.firstName.trim() && s.lastName.trim());
+        
+        if (validStudents.length === 0) {
+            alert('Prosim dodajte vsaj enega učenca');
+            return;
+        }
+
         try {
-            const res = await fetch('http://127.0.0.1:5000/api/classes', { // Placeholder, change
-                method: 'POST',
+            const createdStudentIds: string[] = [];
+            
+            for (const student of validStudents) {
+                const email = `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}@student.risalko.si`;
+                const password = 'student123'; // Default password for students
+                
+                const res = await fetch('http://127.0.0.1:5000/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: student.firstName,
+                        surname: student.lastName,
+                        email: email,
+                        password: password,
+                        type: 'student'
+                    }),
+                });
+
+                const result = await res.json();
+                
+                if (!res.ok) {
+                    console.error('Failed to create student:', result.error);
+                    throw new Error(result.error || 'Failed to create student');
+                }
+                
+                const studentId = result.data?._id?.$oid || result.data?._id;
+                if (studentId) {
+                    createdStudentIds.push(studentId);
+                }
+            }
+
+            const classRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`);
+            const classData = await classRes.json();
+            
+            if (!classRes.ok) {
+                throw new Error('Failed to fetch class data');
+            }
+
+            const existingStudentIds = classData.data?.students?.map((s: any) => s._id?.$oid || s._id || s) || [];
+            
+            const allStudentIds = [...existingStudentIds, ...createdStudentIds];
+
+            const updateRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(students),
+                body: JSON.stringify({
+                    students: allStudentIds
+                }),
             });
 
-            const result = await res.json();
+            const updateResult = await updateRes.json();
 
-            if (!res.ok) throw new Error(result.error || 'Something went wrong');
+            if (!updateRes.ok) {
+                throw new Error(updateResult.error || 'Failed to update class');
+            }
 
-            console.log('Students for class', classId, students);
+            alert(`✅ Uspešno dodanih ${createdStudentIds.length} učencev v razred ${classData.data?.class_name || ''}`);
+            
             setStudents([{ firstName: '', lastName: '' }]);
 
         } catch (error) {
-            console.error('Error creating class:', error);
-            alert('Failed to create class');
+            console.error('Error adding students:', error);
+            alert(`Napaka pri dodajanju učencev: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
 
     };
