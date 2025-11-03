@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface Paragraph {
   _id: string | { $oid: string };
@@ -37,7 +38,9 @@ interface StoryData {
 }
 
 export default function StoryPage() {
-  const { classId, storyId } = useParams();
+  const params = useParams();
+  const classId = Array.isArray(params.classId) ? params.classId[0] : params.classId;
+  const storyId = Array.isArray(params.storyId) ? params.storyId[0] : params.storyId;
   const router = useRouter();
   const [data, setData] = useState<StoryData>({
     story: null,
@@ -51,6 +54,7 @@ export default function StoryPage() {
   const [userType, setUserType] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [userParagraphs, setUserParagraphs] = useState<string[]>([]);
+  const [isFinalizingStory, setIsFinalizingStory] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -254,9 +258,41 @@ export default function StoryPage() {
     }
   };
 
+  const handleFinalizeStory = async () => {
+    if (!confirm('Ali ste prepričani, da želite zaključiti to slikanico? Zgodbe se ne bodo mogle spreminjati.')) {
+      return;
+    }
+
+    setIsFinalizingStory(true);
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:5000/api/classes/${classId}/finalize-story/${storyId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Napaka pri zaključevanju zgodbe");
+      }
+
+      const responseData = await res.json();
+      alert(`✅ Slikanica uspešno zaključena! Skupaj ${responseData.data.images_count} slik.`);
+      
+      // Redirect back to classes
+      router.push(`/classes/${classId}`);
+    } catch (err) {
+      console.error("Napaka pri zaključevanju zgodbe:", err);
+      alert("Napaka pri zaključevanju zgodbe");
+    } finally {
+      setIsFinalizingStory(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="background">
+      <div className="background min-h-screen">
         <p className="text-text text-center pt-8">Nalaganje zgodbe...</p>
       </div>
     );
@@ -264,13 +300,13 @@ export default function StoryPage() {
 
   if (error || !data.story) {
     return (
-      <div className="background">
+      <div className="background min-h-screen">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <p className="text-lg font-semibold text-red-600 mb-4">{error || "Zgodba ni najdena"}</p>
+            <p className="text-lg font-semibold text-red-300 mb-4">{error || "Zgodba ni najdena"}</p>
             <button
               onClick={() => router.back()}
-              className="bg-sky-400 hover:bg-sky-500 text-text font-semibold py-2 px-4 rounded-lg"
+              className="btn bg-sky-400 text-text"
             >
               ← Nazaj
             </button>
@@ -284,7 +320,7 @@ export default function StoryPage() {
   const isStudent = userType === "student";
 
   return (
-    <div className="background">
+    <div className="background min-h-screen">
       <div className="mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
@@ -292,7 +328,7 @@ export default function StoryPage() {
             <div className="flex items-center gap-3 mb-2">
               <button
                 onClick={() => router.back()}
-                className="text-gray-300 hover:text-gray-100 transition-colors text-lg font-semibold"
+                className="text-yellow-100 hover:text-yellow-200 transition-colors text-lg font-semibold"
               >
                 ←
               </button>
@@ -309,6 +345,17 @@ export default function StoryPage() {
               )}
             </div>
           </div>
+          
+          {/* Finalize Story Button for Teachers */}
+          {isTeacher && (
+            <button
+              onClick={handleFinalizeStory}
+              disabled={isFinalizingStory}
+              className="btn bg-green-400 text-text disabled:bg-gray-500 disabled:text-gray-700"
+            >
+              {isFinalizingStory ? 'Zaključujem...' : '✓ Končaj slikanico'}
+            </button>
+          )}
         </div>
 
         <div className="p-8">
@@ -405,8 +452,9 @@ export default function StoryPage() {
                     const paragraphId = typeof paragraph._id === 'string' ? paragraph._id : paragraph._id.$oid;
 
                     return (
-                      <div
+                      <Link
                         key={paragraphId}
+                        href={`/classes/${classId}/${storyId}/${paragraphId}`}
                         className="card bg-sky-400 cursor-pointer hover:shadow-xl transition-shadow"
                       >
                         <div className="flex items-center justify-between mb-3">
@@ -426,7 +474,7 @@ export default function StoryPage() {
                             <p className="text-xs text-text-muted">✏️ Pripravljeni na risanje?</p>
                           )}
                         </div>
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>

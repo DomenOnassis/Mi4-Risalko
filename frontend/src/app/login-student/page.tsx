@@ -44,8 +44,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="background flex items-center justify-center">
-      <div className="section-dark w-md">
+    <div className="background min-h-screen flex items-center justify-center p-4">
+      <div className="section-dark max-w-md w-full">
         <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Prijavi se kot učenec
         </h1>
@@ -65,7 +65,7 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="key"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              className="block text-sm font-medium text-gray-200 mb-2"
             >
               Ključ
             </label>
@@ -83,7 +83,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="btn bg-gradient-to-r from-purple-200 via-pink-100 to-yellow-100 text-black w-full"
+            className="btn bg-yellow-100 text-text w-full"
           >
             Prijava
           </button>

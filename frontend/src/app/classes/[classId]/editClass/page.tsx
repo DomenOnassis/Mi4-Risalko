@@ -73,22 +73,22 @@ const EditClass = () => {
 
   if (loading) {
     return (
-      <div className="background flex items-center justify-center">
-        Nalagam podatke o razredu...
+      <div className="background min-h-screen flex items-center justify-center">
+        <p className="text-text">Nalagam podatke o razredu...</p>
       </div>
     );
   }
 
   return (
-    <div className="background flex items-center justify-center">
-      <div className="section-dark w-md">
+    <div className="background min-h-screen flex items-center justify-center p-4">
+      <div className="section-dark max-w-md w-full">
         <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Uredi razred
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Ime razreda
             </label>
             <input
@@ -103,7 +103,7 @@ const EditClass = () => {
           </div>
 
           <div className="flex flex-col">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-200 mb-2">
               Barva razreda
             </label>
             <div className="flex items-center gap-3">
@@ -119,7 +119,7 @@ const EditClass = () => {
 
           <button
             type="submit"
-            className="btn bg-gradient-to-r from-purple-200 via-pink-100 to-yellow-100 text-black w-full"
+            className="btn bg-yellow-100 text-text w-full"
           >
             Shrani spremembe
           </button>

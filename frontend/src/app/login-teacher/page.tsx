@@ -47,17 +47,26 @@ try {
   };
 
   return (
-    <div className="background flex items-center justify-center">
-      <div className="section-dark w-md">
+    <div className="background min-h-screen flex items-center justify-center p-4">
+      <div className="section-dark max-w-md w-full">
         <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Prijavi se kot učitelj
         </h1>
 
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg text-sm text-center mb-4">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-100 text-green-700 p-3 rounded-lg text-sm text-center mb-4">
+            {success}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
-     
-          
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
               E-pošta
             </label>
             <input
@@ -72,7 +81,7 @@ try {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
               Geslo
             </label>
             <input
@@ -88,7 +97,7 @@ try {
 
           <button
             type="submit" 
-            className="btn bg-gradient-to-r from-purple-200 via-pink-100 to-yellow-100 text-black w-full"
+            className="btn bg-yellow-100 text-text w-full"
           >
             Prijava
           </button>

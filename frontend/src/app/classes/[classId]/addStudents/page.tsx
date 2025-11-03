@@ -144,15 +144,15 @@ const AddStudentsPage = () => {
 
     if (loading) {
         return (
-            <div className="background flex items-center justify-center">
-                Nalagam podatke o razredu...
+            <div className="background min-h-screen flex items-center justify-center">
+                <p className="text-text">Nalagam podatke o razredu...</p>
             </div>
         );
     }
 
     return (
-        <div className="background flex items-center justify-center">
-            <div className="section-dark w-2xl">
+        <div className="background min-h-screen flex items-center justify-center p-4">
+            <div className="section-dark max-w-2xl w-full">
                 <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
                     Dodajanje učencov v razred {classData.class_name}
                 </h1>
@@ -179,7 +179,7 @@ const AddStudentsPage = () => {
                                 <button
                                     type="button"
                                     onClick={() => removeStudent(index)}
-                                    className="text-red-500 hover:text-red-700 font-bold px-2"
+                                    className="text-red-300 hover:text-red-100 font-bold px-2 text-2xl"
                                 >
                                     ×
                                 </button>
@@ -187,25 +187,25 @@ const AddStudentsPage = () => {
                         </div>
                     ))}
 
-                    <div className="flex justify-between">
+                    <div className="flex gap-4 pt-2">
                         <button
                             type="button"
                             onClick={addStudent}
-                            className="btn bg-yellow-100 text-black"
+                            className="btn bg-sky-400 text-text flex-1"
                         >
                             Dodaj učenca
                         </button>
 
                         <button
                             type="submit"
-                            className="btn bg-purple-200 text-black"
+                            className="btn bg-yellow-100 text-text flex-1"
                         >
                             Potrdi
                         </button>
                     </div>
                 </form>
             </div>
-        </div>//TODO: CSV button
+        </div>
     );
 };
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 const ClassPage = () => {
   type Story = {
@@ -12,18 +13,38 @@ const ClassPage = () => {
     author?: string;
     is_finished?: boolean;
   };
+
+  type FinalizedStory = {
+    story_id: string | { $oid: string };
+    paragraphs: Array<{
+      paragraph_id: string | { $oid: string };
+      content: string;
+      drawing: string | null;
+      order: number;
+    }>;
+    story?: {
+      title: string;
+      short_description: string;
+      author?: string;
+    };
+  };
+
   const [stories, setStories] = useState<Story[]>([]);
+  const [finalizedStories, setFinalizedStories] = useState<FinalizedStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [className, setClassName] = useState('');
   const [userParagraphs, setUserParagraphs] = useState<string[]>([]);
-  const params = useParams();
-  const router = useRouter();
-  const classId = params.classId;
   const [activeTab, setActiveTab] = useState<"workshop" | "finished">(
     "workshop"
   );
+  const [slideshowStory, setSlideshowStory] = useState<FinalizedStory | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const params = useParams();
+  const router = useRouter();
+  const classId = params.classId;
 
   useEffect(() => {
     const userStored = localStorage.getItem('user');
@@ -58,6 +79,18 @@ const ClassPage = () => {
           
           const classStories = cls.stories || [];
           setStories(classStories);
+
+          // Set finalized stories with story details
+          const finalized = (cls.finalized_stories || []).map((fs: any) => ({
+            story_id: fs.story_id,
+            paragraphs: fs.paragraphs || [],
+            story: fs.story || {
+              title: 'Neznana zgodba',
+              short_description: '',
+              author: ''
+            }
+          }));
+          setFinalizedStories(finalized);
         }
       } catch (error) {
         console.error("Napaka pri pridobivanju podatkov razreda:", error);
@@ -80,11 +113,28 @@ const ClassPage = () => {
   const isTeacher = userType === "teacher";
   const isStudent = userType === "student";
 
-  // For students, determine if they have any paragraphs in a story
-  const hasStudentParagraphInStory = (storyId: string) => {
-    if (isTeacher) return true;
-    // Would need to fetch paragraph details to check, for now allow viewing
-    return true;
+  const handleNextImage = () => {
+    if (slideshowStory) {
+      setCurrentImageIndex((prev) => (prev + 1) % slideshowStory.paragraphs.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (slideshowStory) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? slideshowStory.paragraphs.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const openSlideshow = (story: FinalizedStory) => {
+    setSlideshowStory(story);
+    setCurrentImageIndex(0);
+  };
+
+  const closeSlideshow = () => {
+    setSlideshowStory(null);
+    setCurrentImageIndex(0);
   };
 
   return (
@@ -95,7 +145,7 @@ const ClassPage = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push('/classes')}
                 className="text-gray-300 hover:text-gray-100 transition-colors text-lg font-semibold"
               >
                 ←
@@ -199,39 +249,147 @@ const ClassPage = () => {
             </div>
           )}
 
-          {/* Finished Stories */}
+          {/* Finalized Stories */}
           {activeTab === "finished" && (
             <div>
-              {stories.filter(s => s.is_finished).length === 0 ? (
-                <p className="text-text-muted text-center py-8">Ni dokončanih zgodb.</p>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                Dokončane slikanice
+              </h2>
+
+              {finalizedStories.length === 0 ? (
+                <p className="text-text-muted text-center py-8">Ni dokončanih slikanica.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {stories
-                    .filter(s => s.is_finished)
-                    .map((story) => (
-                      <div
-                        key={typeof story._id === "string" ? story._id : story._id.$oid}
-                        className="card bg-green-400"
+                  {finalizedStories.map((story, idx) => {
+                    const storyId = story.story_id 
+                      ? (typeof story.story_id === "string" ? story.story_id : story.story_id.$oid)
+                      : `story-${idx}`;
+                    const hasParagraphs = story.paragraphs && story.paragraphs.length > 0;
+                    
+                    return (
+                      <button
+                        key={storyId}
+                        onClick={() => hasParagraphs && openSlideshow(story)}
+                        disabled={!hasParagraphs}
+                        className={`card cursor-pointer hover:shadow-xl transition-shadow text-left ${
+                          hasParagraphs 
+                            ? 'bg-green-400' 
+                            : 'bg-gray-400 opacity-60 cursor-not-allowed'
+                        }`}
                       >
                         <h3 className="text-lg font-semibold text-text mb-2">
-                          {story.title}
+                          {story.story?.title || 'Neznana zgodba'}
                         </h3>
                         <p className="text-text-muted line-clamp-3">
-                          {story.short_description || "Brez opisa"}
+                          {story.story?.short_description || "Brez opisa"}
                         </p>
-                        {story.author && (
+                        {story.story?.author && (
                           <p className="text-sm text-text-muted mt-3 font-medium">
-                            Avtor: {story.author}
+                            Avtor: {story.story.author}
                           </p>
                         )}
-                      </div>
-                    ))}
+                        <p className="text-xs text-text-muted mt-3 pt-3 border-t border-text-muted/30">
+                          📚 {story.paragraphs?.length || 0} odlomkov
+                        </p>
+                        {!hasParagraphs && (
+                          <p className="text-xs text-red-600 font-semibold mt-2">
+                            Ni odlomkov za prikaz
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Slideshow Modal */}
+      {slideshowStory && slideshowStory.paragraphs.length > 0 && (
+        <div className="fixed inset-0 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200 z-50 flex items-center justify-between px-2 sm:px-4">
+          {/* Close Button */}
+          <button
+            onClick={closeSlideshow}
+            className="absolute top-4 right-4 bg-yellow-100 hover:bg-yellow-200 text-text rounded-full p-3 transition-colors z-10 shadow-lg border-2 border-gray-400"
+          >
+            <X size={28} />
+          </button>
+
+          {/* Left Arrow */}
+          <button
+            onClick={handlePrevImage}
+            className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 text-white rounded-full p-4 sm:p-5 transition-colors shadow-lg border-3 border-white"
+            aria-label="Prejšnji odlomek"
+          >
+            <ChevronLeft size={48} />
+          </button>
+
+          {/* Content Container - Full Screen Responsive */}
+          <div className="w-full h-full flex flex-col items-center justify-center overflow-y-auto pt-20 pb-20">
+            <div className="w-full max-w-5xl lg:max-w-4xl xl:max-w-4xl 2xl:max-w-5xl mx-auto px-4 py-8">
+              {/* Story Header */}
+              <div className="text-center mb-8 lg:mb-12">
+                <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-5xl font-black text-gray-900 mb-3 drop-shadow-lg">
+                  {slideshowStory.story?.title}
+                </h1>
+                <p className="text-gray-800 text-lg sm:text-xl lg:text-xl font-semibold">
+                  Odlomek {currentImageIndex + 1} od {slideshowStory.paragraphs.length}
+                </p>
+              </div>
+
+              {/* Paragraph Content and Image */}
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl lg:rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10 border-4 border-gray-200">
+                {/* Paragraph Text */}
+                <div className="mb-8 lg:mb-10 bg-sky-50 p-6 sm:p-8 lg:p-8 rounded-xl border-l-8 border-sky-500">
+                  <p className="text-gray-800 text-lg sm:text-xl lg:text-2xl leading-relaxed font-semibold">
+                    "{slideshowStory.paragraphs[currentImageIndex].content}"
+                  </p>
+                </div>
+
+                {/* Paragraph Drawing */}
+                {slideshowStory.paragraphs[currentImageIndex].drawing && (
+                  <div className="flex flex-col items-center">
+                    <p className="text-gray-700 text-base sm:text-lg lg:text-lg font-semibold mb-6">
+                      🎨 Ilustracija:
+                    </p>
+                    <img
+                      src={slideshowStory.paragraphs[currentImageIndex].drawing}
+                      alt={`Ilustracija odlomka ${currentImageIndex + 1}`}
+                      className="w-full max-h-80 sm:max-h-96 lg:max-h-[500px] xl:max-h-[550px] object-contain rounded-xl border-4 border-gray-300 shadow-lg"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="mt-8 lg:mt-10 flex items-center justify-center gap-4 sm:gap-6">
+                <div className="w-48 sm:w-56 lg:w-64 h-4 bg-gray-300 rounded-full overflow-hidden border-2 border-gray-400">
+                  <div
+                    className="h-full bg-gradient-to-r from-sky-500 to-sky-600 transition-all"
+                    style={{
+                      width: `${((currentImageIndex + 1) / slideshowStory.paragraphs.length) * 100}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-gray-800 font-bold text-lg sm:text-xl">
+                  {currentImageIndex + 1}/{slideshowStory.paragraphs.length}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={handleNextImage}
+            className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 text-white rounded-full p-4 sm:p-5 transition-colors shadow-lg border-3 border-white"
+            aria-label="Naslednji odlomek"
+          >
+            <ChevronRight size={48} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

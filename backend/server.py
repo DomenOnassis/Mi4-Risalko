@@ -266,7 +266,6 @@ def get_story_paragraphs(story_id):
     except Exception:
         return Response(json_util.dumps({'error': 'Invalid story_id format'}), 400)
 
-    # Find all paragraphs for this story using MongoDB collection directly
     try:
         collection = db.db["paragraphs"]
         paragraphs = list(collection.find({"story_id": story_object_id}))
@@ -489,24 +488,9 @@ def get_classes():
                         "as": "stories"
                     }
             }, 
-            # populate finalized_stories.story_id by matching to the already-looked-up stories array
+            # Keep finalized_stories as-is (story details are now stored directly in each entry)
             {"$addFields": {
-                        "finalized_stories": {
-                            "$map": {
-                                "input": {"$ifNull": ["$finalized_stories", []]},
-                                "as": "fs",
-                                "in": {
-                                    "story_id": {"$arrayElemAt": [{
-                                        "$filter": {
-                                            "input": "$stories",
-                                            "as": "s",
-                                            "cond": {"$eq": ["$$s._id", "$$fs.story_id"]}
-                                        }
-                                    }, 0]},
-                                    "images": "$$fs.images"
-                                }
-                            }
-                        }
+                        "finalized_stories": {"$ifNull": ["$finalized_stories", []]}
                     }
             },
         ] 
@@ -676,24 +660,8 @@ def get_class(class_id):
                         "as": "stories"
                     }
             },
-            # populate finalized_stories.story_id by matching to the already-looked-up stories array
             {"$addFields": {
-                        "finalized_stories": {
-                            "$map": {
-                                "input": {"$ifNull": ["$finalized_stories", []]},
-                                "as": "fs",
-                                "in": {
-                                    "story_id": {"$arrayElemAt": [{
-                                        "$filter": {
-                                            "input": "$stories",
-                                            "as": "s",
-                                            "cond": {"$eq": ["$$s._id", "$$fs.story_id"]}
-                                        }
-                                    }, 0]},
-                                    "images": "$$fs.images"
-                                }
-                            }
-                        }
+                        "finalized_stories": {"$ifNull": ["$finalized_stories", []]}
                     }
             },
         ]
@@ -767,6 +735,73 @@ def append_finalized_story_image(class_id, story_id):
         return Response(json_util.dumps({'error': 'Could not append image; entry may not exist'})), 400
 
     return Response(json_util.dumps({'data': True}), mimetype='application/json'), 200
+
+
+@api.post("/classes/<class_id>/finalize-story/<story_id>")
+def finalize_story(class_id, story_id):
+    """
+    Finalize a story by collecting all paragraphs with their data,
+    adding to finalized_stories, and removing from stories array.
+    """
+    try:
+        class_object_id = ObjectId(class_id)
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid id format'})), 400
+
+    try:
+        collection = db.db['paragraphs']
+        paragraphs = list(collection.find({"story_id": story_object_id}).sort("order", 1))
+
+        if not paragraphs:
+            return Response(json_util.dumps({'error': 'No paragraphs found for this story'})), 404
+
+        story = db.find_one("stories", {"_id": story_object_id})
+        if not story:
+            return Response(json_util.dumps({'error': 'Story not found'})), 404
+
+        paragraphs_data = []
+        for paragraph in paragraphs:
+            paragraphs_data.append({
+                'paragraph_id': paragraph.get('_id'),
+                'content': paragraph.get('content', ''),
+                'drawing': paragraph.get('drawing'),
+                'order': paragraph.get('order', 0)
+            })
+
+        entry = {
+            'story_id': story_object_id,
+            'paragraphs': paragraphs_data,
+            'story': {
+                'title': story.get('title', ''),
+                'short_description': story.get('short_description', ''),
+                'author': story.get('author', '')
+            }
+        }
+
+        res_add = db.update_one(
+            'classes',
+            {'finalized_stories': entry},
+            {'_id': class_object_id},
+            append_array=True
+        )
+
+        if res_add is None:
+            return Response(json_util.dumps({'error': 'Could not add finalized story'})), 400
+
+        db.delete_ref_from_array('classes', 'stories', story_object_id)
+
+        return Response(
+            json_util.dumps({'data': {
+                'message': 'Story finalized successfully',
+                'paragraphs_count': len(paragraphs_data),
+                'entry': entry
+            }}),
+            mimetype='application/json'
+        ), 200
+    except Exception as e:
+        print("Error finalizing story:", e)
+        return Response(json_util.dumps({'error': 'Could not finalize story'})), 400
     
 
 if __name__=="__main__":
