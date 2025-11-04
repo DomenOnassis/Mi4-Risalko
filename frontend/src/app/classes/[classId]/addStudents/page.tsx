@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 type Student = {
     firstName: string;
@@ -15,6 +16,7 @@ const AddStudentsPage = () => {
         class_name: ''
     });
     const params = useParams();
+    const router = useRouter();
     const classId = params.classId;
 
     const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ const AddStudentsPage = () => {
         e.preventDefault();
 
         const validStudents = students.filter(s => s.firstName.trim() && s.lastName.trim());
-        
+
         if (validStudents.length === 0) {
             alert('Prosim dodajte vsaj enega učenca');
             return;
@@ -76,11 +78,11 @@ const AddStudentsPage = () => {
 
         try {
             const createdStudentIds: string[] = [];
-            
+
             for (const student of validStudents) {
                 const email = `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}@student.risalko.si`;
                 const password = 'student123'; // Default password for students
-                
+
                 const res = await fetch('http://127.0.0.1:5000/api/users', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -94,12 +96,12 @@ const AddStudentsPage = () => {
                 });
 
                 const result = await res.json();
-                
+
                 if (!res.ok) {
                     console.error('Failed to create student:', result.error);
                     throw new Error(result.error || 'Failed to create student');
                 }
-                
+
                 const studentId = result.data?._id?.$oid || result.data?._id;
                 if (studentId) {
                     createdStudentIds.push(studentId);
@@ -108,13 +110,17 @@ const AddStudentsPage = () => {
 
             const classRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`);
             const classData = await classRes.json();
-            
+
             if (!classRes.ok) {
                 throw new Error('Failed to fetch class data');
             }
 
-            const existingStudentIds = classData.data?.students?.map((s: any) => s._id?.$oid || s._id || s) || [];
-            
+            const existingStudentIds =
+                classData.data?.students?.map((s: any) => {
+                    const id = s._id?.$oid || s._id || s;
+                    return typeof id === 'object' && id.$oid ? id.$oid : String(id);
+                }) || [];
+
             const allStudentIds = [...existingStudentIds, ...createdStudentIds];
 
             const updateRes = await fetch(`http://127.0.0.1:5000/api/classes/${classId}`, {
@@ -132,7 +138,7 @@ const AddStudentsPage = () => {
             }
 
             alert(`✅ Uspešno dodanih ${createdStudentIds.length} učencev v razred ${classData.data?.class_name || ''}`);
-            
+
             setStudents([{ firstName: '', lastName: '' }]);
 
         } catch (error) {
@@ -153,6 +159,14 @@ const AddStudentsPage = () => {
     return (
         <div className="background min-h-screen flex items-center justify-center p-4">
             <div className="section-dark max-w-2xl w-full">
+                <div className="mb-6">
+                    <button
+                        onClick={() => router.back()}
+                        className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium text-2xl"
+                    >
+                        ←
+                    </button>
+                </div>
                 <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
                     Dodajanje učencov v razred {classData.class_name}
                 </h1>

@@ -9,6 +9,7 @@ type ClassType = {
   _id?: { $oid?: string } | string;
   class_name?: string;
   students?: any[];
+  color: string;
 };
 
 const Classes = () => {
@@ -54,7 +55,7 @@ const Classes = () => {
 
         if (userType === "student") {
           const studentClasses = (result.data || []).filter((cls: any) => {
-            const studentIds = cls.students?.map((s: any) => 
+            const studentIds = cls.students?.map((s: any) =>
               typeof s._id === 'string' ? s._id : s._id?.$oid
             ) || [];
             return studentIds.includes(userId);
@@ -153,16 +154,17 @@ const Classes = () => {
             {isTeacher ? 'Ni najdenih učilnic. Ustvarite jo!' : 'Ni najdenih učilnic.'}
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-8 flex justify-between items-center">
             {classes.map((cls, index) => (
               <div
                 key={typeof cls._id === 'string' ? cls._id : cls._id?.$oid || index}
-                className="card bg-sky-400"
+                className="card relative group max-w-md"
+                style={{ backgroundColor: cls.color || '#60A5FA' }}
                 onClick={() => router.push(`/classes/${cls._id}`)}
               >
                 {isTeacher && (
                   <div
-                    className="absolute bottom-2 right-3 flex gap-2 hover:opacity-100"
+                    className="absolute bottom-2 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button

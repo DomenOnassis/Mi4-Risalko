@@ -17,7 +17,7 @@ export default function DrawPage() {
           href="/"
           className="inline-flex items-center text-yellow-100 hover:text-yellow-200 transition-colors font-black text-lg transform hover:scale-110"
         >
-          🏠 ← Nazaj na domačo stran
+          ←
         </Link>
       </div>
 

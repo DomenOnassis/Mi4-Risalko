@@ -231,30 +231,30 @@ const AssignExcerptsPage = () => {
   const allAssigned = excerpts.every(e => e.assignedTo);
 
   return (
-    <div className="background min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="background min-h-screen p-4">
+      <div className="max-w-5xl mx-auto flex flex-col">
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium"
+            className="text-text transition-all font-medium hover:scale-110 text-2xl"
           >
-            ← Nazaj
+            ←
           </button>
         </div>
 
-        <h1 className="text-3xl font-bold text-center mb-2 gradient-text">
-          Dodeli odlomke učencem
+        <h1 className="text-6xl font-bold text-center mb-2 gradient-text text-outline-dark">
+          📚 Dodeli odlomke učencem 👥
         </h1>
-        <p className="text-center text-gray-200 mb-8">
+        <p className="text-center text-text mb-4 text-xl font-bold">
           {storyData.title} - {excerpts.length} odlomkov
         </p>
 
-        <div className="section-dark rounded-2xl p-6 mb-6">
+        <div className="section-dark rounded-2xl p-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex gap-4">
               <button
                 onClick={() => setAssignmentMode('manual')}
-                className={`py-2 px-6 rounded-lg font-semibold transition-all ${
+                className={`btn py-2 px-6 rounded-lg font-semibold transition-all ${
                   assignmentMode === 'manual'
                     ? 'bg-yellow-100 text-text shadow-lg'
                     : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
@@ -264,7 +264,7 @@ const AssignExcerptsPage = () => {
               </button>
               <button
                 onClick={() => setAssignmentMode('random')}
-                className={`py-2 px-6 rounded-lg font-semibold transition-all ${
+                className={`btn py-2 px-6 rounded-lg font-semibold transition-all ${
                   assignmentMode === 'random'
                     ? 'bg-yellow-100 text-text shadow-lg'
                     : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
@@ -293,8 +293,8 @@ const AssignExcerptsPage = () => {
           </div>
         </div>
 
-        <div className="section-dark rounded-2xl p-6 mt-6">
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+        <div className="section-dark rounded-2xl p-6 mt-2">
+          <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 no-scrollbar">
             {excerpts.map((excerpt) => (
               <div
                 key={excerpt.id}

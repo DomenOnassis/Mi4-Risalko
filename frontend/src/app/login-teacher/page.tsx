@@ -9,11 +9,11 @@ export default function LoginPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  async function handleSubmit(e: FormEvent<HTMLFormElement>){
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     console.log("FORM SUBMITTED!");
     e.preventDefault();
-    
-try {
+
+    try {
       const res = await fetch("http://127.0.0.1:5000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -49,6 +49,14 @@ try {
   return (
     <div className="background min-h-screen flex items-center justify-center p-4">
       <div className="section-dark max-w-md w-full">
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium text-2xl"
+          >
+            ←
+          </button>
+        </div>
         <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Prijavi se kot učitelj
         </h1>
@@ -96,7 +104,7 @@ try {
           </div>
 
           <button
-            type="submit" 
+            type="submit"
             className="btn bg-yellow-100 text-text w-full"
           >
             Prijava

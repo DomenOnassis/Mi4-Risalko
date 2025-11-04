@@ -53,7 +53,7 @@ const ClassPage = () => {
         const user = JSON.parse(userStored);
         setUserType(user.type || null);
         setUserId(user._id?.$oid || user._id || user.id);
-        const paragraphIds = (user.paragraphs || []).map((p: any) => 
+        const paragraphIds = (user.paragraphs || []).map((p: any) =>
           typeof p === 'string' ? p : p.$oid
         );
         setUserParagraphs(paragraphIds);
@@ -76,11 +76,11 @@ const ClassPage = () => {
         if (data.data) {
           const cls = data.data;
           setClassName(cls.class_name || '');
-          
+
           const classStories = cls.stories || [];
           setStories(classStories);
+          console.log(cls);
 
-          // Set finalized stories with story details
           const finalized = (cls.finalized_stories || []).map((fs: any) => ({
             story_id: fs.story_id,
             paragraphs: fs.paragraphs || [],
@@ -121,7 +121,7 @@ const ClassPage = () => {
 
   const handlePrevImage = () => {
     if (slideshowStory) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? slideshowStory.paragraphs.length - 1 : prev - 1
       );
     }
@@ -140,7 +140,6 @@ const ClassPage = () => {
   return (
     <div className="background">
       <div className="mx-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -168,44 +167,46 @@ const ClassPage = () => {
         </div>
 
         <div className="p-8">
-          {/* Teacher Controls */}
           {isTeacher && (
-            <div className="mb-6">
+            <div className="mb-6 flex flex-wrap gap-4">
               <Link
                 href={`/classes/${classId}/addStudents`}
-                className="inline-block bg-sky-400 hover:bg-sky-500 text-text font-semibold py-2 px-4 rounded-lg transition-colors"
+                className="btn inline-block bg-sky-400 text-text"
               >
                 + Dodaj učenca
               </Link>
+
+              <Link
+                href={`/classes/${classId}/viewStudents`}
+                className="btn inline-block bg-purple-400 text-text"
+              >
+                👥 Ogled učencev
+              </Link>
             </div>
           )}
-
           {/* Tabs */}
           <div className="border-b border-gray-300 mb-6 flex gap-6">
             <button
               onClick={() => setActiveTab("workshop")}
-              className={`cursor-pointer pb-2 font-semibold text-lg ${
-                activeTab === "workshop"
+              className={`cursor-pointer pb-2 font-semibold text-lg ${activeTab === "workshop"
                   ? "text-sky-500 border-b-4 border-sky-500"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               Delavnica
             </button>
 
             <button
               onClick={() => setActiveTab("finished")}
-              className={`cursor-pointer pb-2 font-semibold text-lg ${
-                activeTab === "finished"
+              className={`cursor-pointer pb-2 font-semibold text-lg ${activeTab === "finished"
                   ? "text-sky-500 border-b-4 border-sky-500"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               Dokončane
             </button>
           </div>
 
-          {/* Active Stories */}
           {activeTab === "workshop" && (
             <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">
@@ -221,10 +222,9 @@ const ClassPage = () => {
                   {stories.filter(s => !s.is_finished).map((story) => (
                     <Link
                       key={typeof story._id === "string" ? story._id : story._id.$oid}
-                      href={`/classes/${classId}/${
-                        typeof story._id === "string" ? story._id : story._id.$oid
-                      }`}
-                      className="card bg-sky-400 cursor-pointer hover:shadow-xl transition-shadow"
+                      href={`/classes/${classId}/${typeof story._id === "string" ? story._id : story._id.$oid
+                        }`}
+                      className="card bg-sky-400 cursor-pointer max-w-lg"
                     >
                       <h3 className="text-lg font-semibold text-text mb-2">
                         {story.title}
@@ -249,7 +249,6 @@ const ClassPage = () => {
             </div>
           )}
 
-          {/* Finalized Stories */}
           {activeTab === "finished" && (
             <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">
@@ -261,21 +260,20 @@ const ClassPage = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {finalizedStories.map((story, idx) => {
-                    const storyId = story.story_id 
+                    const storyId = story.story_id
                       ? (typeof story.story_id === "string" ? story.story_id : story.story_id.$oid)
                       : `story-${idx}`;
                     const hasParagraphs = story.paragraphs && story.paragraphs.length > 0;
-                    
+
                     return (
                       <button
                         key={storyId}
                         onClick={() => hasParagraphs && openSlideshow(story)}
                         disabled={!hasParagraphs}
-                        className={`card cursor-pointer hover:shadow-xl transition-shadow text-left ${
-                          hasParagraphs 
-                            ? 'bg-green-400' 
+                        className={`card cursor-pointer max-w-lg text-left ${hasParagraphs
+                            ? 'bg-green-400'
                             : 'bg-gray-400 opacity-60 cursor-not-allowed'
-                        }`}
+                          }`}
                       >
                         <h3 className="text-lg font-semibold text-text mb-2">
                           {story.story?.title || 'Neznana zgodba'}
@@ -306,10 +304,8 @@ const ClassPage = () => {
         </div>
       </div>
 
-      {/* Slideshow Modal */}
       {slideshowStory && slideshowStory.paragraphs.length > 0 && (
         <div className="fixed inset-0 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200 z-50 flex items-center justify-between px-2 sm:px-4">
-          {/* Close Button */}
           <button
             onClick={closeSlideshow}
             className="absolute top-4 right-4 bg-yellow-100 hover:bg-yellow-200 text-text rounded-full p-3 transition-colors z-10 shadow-lg border-2 border-gray-400"
@@ -317,7 +313,6 @@ const ClassPage = () => {
             <X size={28} />
           </button>
 
-          {/* Left Arrow */}
           <button
             onClick={handlePrevImage}
             className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 text-white rounded-full p-4 sm:p-5 transition-colors shadow-lg border-3 border-white"
@@ -326,10 +321,8 @@ const ClassPage = () => {
             <ChevronLeft size={48} />
           </button>
 
-          {/* Content Container - Full Screen Responsive */}
           <div className="w-full h-full flex flex-col items-center justify-center overflow-y-auto pt-20 pb-20">
             <div className="w-full max-w-5xl lg:max-w-4xl xl:max-w-4xl 2xl:max-w-5xl mx-auto px-4 py-8">
-              {/* Story Header */}
               <div className="text-center mb-8 lg:mb-12">
                 <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-5xl font-black text-gray-900 mb-3 drop-shadow-lg">
                   {slideshowStory.story?.title}
@@ -341,14 +334,12 @@ const ClassPage = () => {
 
               {/* Paragraph Content and Image */}
               <div className="bg-white/95 backdrop-blur-sm rounded-2xl lg:rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10 border-4 border-gray-200">
-                {/* Paragraph Text */}
                 <div className="mb-8 lg:mb-10 bg-sky-50 p-6 sm:p-8 lg:p-8 rounded-xl border-l-8 border-sky-500">
                   <p className="text-gray-800 text-lg sm:text-xl lg:text-2xl leading-relaxed font-semibold">
                     "{slideshowStory.paragraphs[currentImageIndex].content}"
                   </p>
                 </div>
 
-                {/* Paragraph Drawing */}
                 {slideshowStory.paragraphs[currentImageIndex].drawing && (
                   <div className="flex flex-col items-center">
                     <p className="text-gray-700 text-base sm:text-lg lg:text-lg font-semibold mb-6">
@@ -363,7 +354,6 @@ const ClassPage = () => {
                 )}
               </div>
 
-              {/* Progress Indicator */}
               <div className="mt-8 lg:mt-10 flex items-center justify-center gap-4 sm:gap-6">
                 <div className="w-48 sm:w-56 lg:w-64 h-4 bg-gray-300 rounded-full overflow-hidden border-2 border-gray-400">
                   <div
@@ -380,7 +370,6 @@ const ClassPage = () => {
             </div>
           </div>
 
-          {/* Right Arrow */}
           <button
             onClick={handleNextImage}
             className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 text-white rounded-full p-4 sm:p-5 transition-colors shadow-lg border-3 border-white"

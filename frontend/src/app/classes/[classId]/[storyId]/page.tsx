@@ -306,9 +306,9 @@ export default function StoryPage() {
             <p className="text-lg font-semibold text-red-300 mb-4">{error || "Zgodba ni najdena"}</p>
             <button
               onClick={() => router.back()}
-              className="btn bg-sky-400 text-text"
+              className="text-gray-300 hover:text-gray-100 transition-colors text-2xl"
             >
-              ← Nazaj
+              ←
             </button>
           </div>
         </div>
@@ -320,7 +320,7 @@ export default function StoryPage() {
   const isStudent = userType === "student";
 
   return (
-    <div className="background min-h-screen">
+    <div className="background min-h-screen pb-8">
       <div className="mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
@@ -358,10 +358,10 @@ export default function StoryPage() {
           )}
         </div>
 
-        <div className="p-8">
+        <div className="flex justify-center items-center">
           {/* For Teachers - Show All Paragraphs with Assignment UI */}
           {isTeacher && (
-            <div>
+            <div className="w-6xl">
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">Odlomki in učenci</h2>
               
               {data.paragraphs.length === 0 ? (
@@ -455,7 +455,7 @@ export default function StoryPage() {
                       <Link
                         key={paragraphId}
                         href={`/classes/${classId}/${storyId}/${paragraphId}`}
-                        className="card bg-sky-400 cursor-pointer hover:shadow-xl transition-shadow"
+                        className="card bg-sky-400 cursor-pointer"
                       >
                         <div className="flex items-center justify-between mb-3">
                           <span className="inline-block bg-sky-600 text-white text-xs font-bold px-2 py-1 rounded">

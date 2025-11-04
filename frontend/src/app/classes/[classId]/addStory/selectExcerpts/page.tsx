@@ -125,18 +125,18 @@ const SelectExcerptsPage = () => {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-yellow-100 hover:text-yellow-200 transition-colors font-black text-xl transform hover:scale-110"
+            className="text-text font-black text-xl transform hover:scale-110"
           >
-            🏠 ← Nazaj
+            ←
           </button>
         </div>
 
-        <h1 className="text-5xl font-black text-center mb-8 gradient-text animate-bounce-slow">
+        <h1 className="text-7xl font-black text-center mb-8 gradient-text animate-bounce-slow text-outline-dark">
           📚 Izberi odlomke zgodbe! ✨
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="section-dark rounded-3xl p-8 border-4 border-dashed border-yellow-400">
+          <div className="section-dark rounded-3xl p-8 border-4 border-dashed border-pink-300">
             <h2 className="text-3xl font-black mb-4 text-gray-100 animate-wiggle">
               📖 Vsebina zgodbe
             </h2>
@@ -146,7 +146,7 @@ const SelectExcerptsPage = () => {
             
             <div
               id="story-content"
-              className="bg-gray-900/50 p-6 rounded-2xl border-4 border-gray-500 max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-gray-100 select-text cursor-text font-semibold text-lg shadow-inner"
+              className="bg-gray-900/50 p-6 rounded-2xl border-4 border-gray-500 max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-gray-100 select-text cursor-text font-semibold text-lg shadow-inner no-scrollbar"
               onMouseUp={handleTextSelection}
               onTouchEnd={handleTextSelection}
             >
@@ -171,7 +171,7 @@ const SelectExcerptsPage = () => {
             )}
           </div>
 
-          <div className="section-dark rounded-3xl p-8 border-4 border-dashed border-pink-400">
+          <div className="section-dark rounded-3xl p-8 border-4 border-dashed border-yellow-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-black text-gray-100 animate-wiggle">
                 🎯 Izbrani odlomki ({excerpts.length})
@@ -189,7 +189,7 @@ const SelectExcerptsPage = () => {
               )}
             </div>
 
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto p-4 no-scrollbar">
               {excerpts.length === 0 ? (
                 <div className="text-center py-16 text-gray-300">
                   <p className="text-7xl mb-4 animate-bounce-slow">📝</p>
@@ -203,8 +203,8 @@ const SelectExcerptsPage = () => {
                     className="bg-sky-500/20 p-6 rounded-3xl border-4 border-sky-400 shadow-xl transform hover:scale-105 transition-all"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <span className="inline-block bg-yellow-100 text-text text-lg font-black px-4 py-2 rounded-full shadow-lg">
-                        #{excerpt.order} 🌟
+                      <span className="text-text-light text-lg font-black">
+                        #{excerpt.order}
                       </span>
                       <div className="flex gap-3">
                         <button
@@ -241,7 +241,7 @@ const SelectExcerptsPage = () => {
             </div>
 
             {excerpts.length > 0 && (
-              <div className="mt-8 pt-8 border-t-4 border-dashed border-yellow-400">
+              <div className="mt-8 pt-8 border-t-4 border-dashed border-yellow-200">
                 <button
                   onClick={handleContinue}
                   className="btn bg-yellow-100 text-text w-full text-lg"
