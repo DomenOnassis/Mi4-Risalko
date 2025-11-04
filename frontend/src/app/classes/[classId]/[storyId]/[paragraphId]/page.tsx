@@ -117,9 +117,9 @@ export default function ParagraphDrawPage() {
             </p>
             <button
               onClick={() => router.back()}
-              className="btn bg-sky-400 text-text"
+              className="text-gray-300 hover:text-gray-100 transition-colors text-2xl"
             >
-              ← Nazaj
+              ←
             </button>
           </div>
         </div>
@@ -137,7 +137,6 @@ export default function ParagraphDrawPage() {
             className="inline-flex items-center gap-2 text-yellow-100 hover:text-yellow-200 transition-colors font-bold text-lg"
           >
             <ArrowLeft size={20} />
-            Nazaj
           </button>
           <div className="text-center flex-1">
             <h1 className="text-xl font-bold text-gray-100">Ilustriraj odlomek #{paragraph.order}</h1>

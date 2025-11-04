@@ -73,13 +73,12 @@ const AddStoryPage = () => {
         storyContent = txtContent;
       }
 
-      // Store story data with all required backend fields
       const storyData = {
         title,
         author,
         shortDescription,
         content: storyContent,
-        fullText: storyContent, // Keep fullText for paragraph extraction
+        fullText: storyContent,
       };
 
       sessionStorage.setItem('newStory', JSON.stringify(storyData));
@@ -98,9 +97,9 @@ const AddStoryPage = () => {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium"
+            className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium text-2xl"
           >
-            ← Nazaj
+            ←
           </button>
         </div>
 

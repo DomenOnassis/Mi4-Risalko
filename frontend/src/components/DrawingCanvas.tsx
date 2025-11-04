@@ -17,7 +17,7 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
   const [customBrush, setCustomBrush] = useState('default');
   const [history, setHistory] = useState<ImageData[]>([]);
   const [redoHistory, setRedoHistory] = useState<ImageData[]>([]);
-  const [tool, setTool] = useState<'brush' | 'bucket'>('brush');
+  const [tool, setTool] = useState<'brush' | 'bucket' | 'eraser'>('brush');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -185,6 +185,18 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
     } else {
       x = e.clientX - rect.left;
       y = e.clientY - rect.top;
+    }
+
+    if (tool === 'eraser') {
+      ctx.clearRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+      ctx.beginPath();
+      ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0)';
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+      setLastPosition({ x, y });
+      return;
     }
 
     ctx.beginPath();
@@ -360,7 +372,7 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
     <div className="relative w-full h-[90vh] flex flex-col">
       {showToolbar && (
         <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 dark:from-pink-700 dark:via-purple-700 dark:to-blue-700 text-white p-4 z-10 rounded-3xl m-2 shadow-2xl border-4 border-yellow-300">
-          <div className="flex justify-between items-center flex-wrap gap-4">
+          <div className="flex justify-between items-start flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <label className="text-sm">Orodje:</label>
               <div className="flex gap-2">
@@ -384,6 +396,16 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
                 >
                   🪣 Vedro
                 </button>
+                <button
+                  onClick={() => setTool('eraser')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    tool === 'eraser'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  🧹 Radirka
+                </button>
               </div>
             </div>
 
@@ -402,7 +424,6 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
               </div>
             )}
 
-            {/* Color Swatches */}
             <div className="flex gap-2">
               {colorPresets.map((presetColor) => (
                 <button
@@ -424,11 +445,37 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
               />
             </div>
 
-            {/* Brush Size Slider */}
+            <div className="flex gap-3">
+              <button
+                onClick={undo}
+                className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
+              >
+                ↩️
+              </button>
+              <button
+                onClick={redo}
+                className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
+              >
+                ↪️ Naprej
+              </button>
+              <button
+                onClick={clearCanvas}
+                className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
+              >
+                🗑️ Počisti
+              </button>
+              <button
+                onClick={saveDrawing}
+                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
+              >
+                � Shrani
+              </button>
+            </div>
+
             <div className="flex items-center gap-2">
               <label
                 className="text-sm"
-                style={{ width: '80px', display: 'inline-block' }}
+                style={{ width: '150px', display: 'inline-block' }}
               >
                 Velikost čopiča: {brushSize}px
               </label>
@@ -447,46 +494,17 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
                 }}
               />
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={undo}
-                className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
-              >
-                ↩️ Nazaj
-              </button>
-              <button
-                onClick={redo}
-                className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
-              >
-                ↪️ Naprej
-              </button>
-              <button
-                onClick={clearCanvas}
-                className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
-              >
-                🗑️ Počisti
-              </button>
-              <button
-                onClick={saveDrawing}
-                className="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
-              >
-                💾 Shrani
-              </button>
-            </div>
           </div>
         </div>
       )}
 
       <button
         onClick={() => setShowToolbar(!showToolbar)}
-        className="absolute top-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-full z-20 hover:from-pink-600 hover:to-purple-700 transition-colors font-black text-lg shadow-2xl transform hover:scale-110 border-4 border-yellow-300"
+        className="absolute bottom-4 right-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-full z-20 hover:from-pink-600 hover:to-purple-700 transition-colors font-black text-lg shadow-2xl transform hover:scale-110 border-4 border-yellow-300"
       >
         {showToolbar ? '🎨 Skrij Orodja' : '🎨 Prikaži Orodja'}
       </button>
 
-      {/* Canvas */}
       <div className="border-8 border-rainbow rounded-3xl overflow-hidden bg-white flex-1 shadow-2xl" style={{borderImage: 'linear-gradient(45deg, #FF6B6B, #FFD93D, #6BCF7F, #4ECDC4, #C44569) 1'}}>
         <canvas
           ref={canvasRef}

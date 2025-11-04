@@ -306,9 +306,9 @@ export default function StoryPage() {
             <p className="text-lg font-semibold text-red-300 mb-4">{error || "Zgodba ni najdena"}</p>
             <button
               onClick={() => router.back()}
-              className="btn bg-sky-400 text-text"
+              className="text-gray-300 hover:text-gray-100 transition-colors text-2xl"
             >
-              ← Nazaj
+              ←
             </button>
           </div>
         </div>

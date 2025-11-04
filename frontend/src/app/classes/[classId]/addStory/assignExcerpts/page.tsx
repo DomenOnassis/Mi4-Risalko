@@ -236,9 +236,9 @@ const AssignExcerptsPage = () => {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-text transition-all font-medium hover:scale-110"
+            className="text-text transition-all font-medium hover:scale-110 text-2xl"
           >
-            ← Nazaj
+            ←
           </button>
         </div>
 

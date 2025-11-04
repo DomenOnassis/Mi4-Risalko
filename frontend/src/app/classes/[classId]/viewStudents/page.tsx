@@ -102,9 +102,9 @@ const ViewStudents = () => {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => router.back()}
-                        className="text-gray-300 hover:text-gray-100 transition-colors text-lg font-semibold"
+                        className="text-gray-300 hover:text-gray-100 transition-colors text-2xl font-semibold"
                     >
-                        ← Nazaj
+                        ←
                     </button>
                     <h1 className="text-3xl font-bold text-gray-200">
                         Učenci v razredu: {className}

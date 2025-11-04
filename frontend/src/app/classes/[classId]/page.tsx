@@ -81,7 +81,6 @@ const ClassPage = () => {
           setStories(classStories);
           console.log(cls);
 
-          // Set finalized stories with story details
           const finalized = (cls.finalized_stories || []).map((fs: any) => ({
             story_id: fs.story_id,
             paragraphs: fs.paragraphs || [],
@@ -141,7 +140,6 @@ const ClassPage = () => {
   return (
     <div className="background">
       <div className="mx-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -169,7 +167,6 @@ const ClassPage = () => {
         </div>
 
         <div className="p-8">
-          {/* Teacher Controls */}
           {isTeacher && (
             <div className="mb-6 flex flex-wrap gap-4">
               <Link
@@ -187,8 +184,6 @@ const ClassPage = () => {
               </Link>
             </div>
           )}
-
-
           {/* Tabs */}
           <div className="border-b border-gray-300 mb-6 flex gap-6">
             <button
@@ -212,7 +207,6 @@ const ClassPage = () => {
             </button>
           </div>
 
-          {/* Active Stories */}
           {activeTab === "workshop" && (
             <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">
@@ -255,7 +249,6 @@ const ClassPage = () => {
             </div>
           )}
 
-          {/* Finalized Stories */}
           {activeTab === "finished" && (
             <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-6">
@@ -311,10 +304,8 @@ const ClassPage = () => {
         </div>
       </div>
 
-      {/* Slideshow Modal */}
       {slideshowStory && slideshowStory.paragraphs.length > 0 && (
         <div className="fixed inset-0 bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200 z-50 flex items-center justify-between px-2 sm:px-4">
-          {/* Close Button */}
           <button
             onClick={closeSlideshow}
             className="absolute top-4 right-4 bg-yellow-100 hover:bg-yellow-200 text-text rounded-full p-3 transition-colors z-10 shadow-lg border-2 border-gray-400"
@@ -322,7 +313,6 @@ const ClassPage = () => {
             <X size={28} />
           </button>
 
-          {/* Left Arrow */}
           <button
             onClick={handlePrevImage}
             className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 text-white rounded-full p-4 sm:p-5 transition-colors shadow-lg border-3 border-white"
@@ -331,10 +321,8 @@ const ClassPage = () => {
             <ChevronLeft size={48} />
           </button>
 
-          {/* Content Container - Full Screen Responsive */}
           <div className="w-full h-full flex flex-col items-center justify-center overflow-y-auto pt-20 pb-20">
             <div className="w-full max-w-5xl lg:max-w-4xl xl:max-w-4xl 2xl:max-w-5xl mx-auto px-4 py-8">
-              {/* Story Header */}
               <div className="text-center mb-8 lg:mb-12">
                 <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-5xl font-black text-gray-900 mb-3 drop-shadow-lg">
                   {slideshowStory.story?.title}
@@ -346,14 +334,12 @@ const ClassPage = () => {
 
               {/* Paragraph Content and Image */}
               <div className="bg-white/95 backdrop-blur-sm rounded-2xl lg:rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10 border-4 border-gray-200">
-                {/* Paragraph Text */}
                 <div className="mb-8 lg:mb-10 bg-sky-50 p-6 sm:p-8 lg:p-8 rounded-xl border-l-8 border-sky-500">
                   <p className="text-gray-800 text-lg sm:text-xl lg:text-2xl leading-relaxed font-semibold">
                     "{slideshowStory.paragraphs[currentImageIndex].content}"
                   </p>
                 </div>
 
-                {/* Paragraph Drawing */}
                 {slideshowStory.paragraphs[currentImageIndex].drawing && (
                   <div className="flex flex-col items-center">
                     <p className="text-gray-700 text-base sm:text-lg lg:text-lg font-semibold mb-6">
@@ -368,7 +354,6 @@ const ClassPage = () => {
                 )}
               </div>
 
-              {/* Progress Indicator */}
               <div className="mt-8 lg:mt-10 flex items-center justify-center gap-4 sm:gap-6">
                 <div className="w-48 sm:w-56 lg:w-64 h-4 bg-gray-300 rounded-full overflow-hidden border-2 border-gray-400">
                   <div
@@ -385,7 +370,6 @@ const ClassPage = () => {
             </div>
           </div>
 
-          {/* Right Arrow */}
           <button
             onClick={handleNextImage}
             className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-sky-500 hover:bg-sky-600 text-white rounded-full p-4 sm:p-5 transition-colors shadow-lg border-3 border-white"

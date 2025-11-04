@@ -127,7 +127,7 @@ const SelectExcerptsPage = () => {
             onClick={() => router.back()}
             className="text-text font-black text-xl transform hover:scale-110"
           >
-            🏠 ← Nazaj
+            ←
           </button>
         </div>
 
