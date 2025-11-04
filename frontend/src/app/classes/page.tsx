@@ -154,11 +154,11 @@ const Classes = () => {
             {isTeacher ? 'Ni najdenih učilnic. Ustvarite jo!' : 'Ni najdenih učilnic.'}
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-8 flex justify-between items-center">
             {classes.map((cls, index) => (
               <div
                 key={typeof cls._id === 'string' ? cls._id : cls._id?.$oid || index}
-                className="card relative group"
+                className="card relative group max-w-md"
                 style={{ backgroundColor: cls.color || '#60A5FA' }}
                 onClick={() => router.push(`/classes/${cls._id}`)}
               >

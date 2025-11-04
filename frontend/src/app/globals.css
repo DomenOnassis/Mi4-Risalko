@@ -5,49 +5,72 @@
   --foreground: #171717;
 
   /* Primary & Secondary */
-  --color-primary: #3B82F6;    /* Vibrant blue, friendly */
-  --color-secondary: #fff1cd;  /* Warm yellow, playful accent */
+  --color-primary: #3B82F6;
+  /* Vibrant blue, friendly */
+  --color-secondary: #fff1cd;
+  /* Warm yellow, playful accent */
   --color-button: #ffdf76;
   /* Backgrounds */
   --color-bg: #F9FAFB;
-  --color-dark-container: #4d4d4d;          
-  --color-card: #FFFFFF;       /* Card background */
-  --color-bg-alt: #EFF6FF;     /* Subtle blue tint for sections */
+  --color-dark-container: #4d4d4d;
+  --color-card: #FFFFFF;
+  /* Card background */
+  --color-bg-alt: #EFF6FF;
+  /* Subtle blue tint for sections */
 
   /* Text */
-  --color-text: #1b1d20;       /* Dark for readability */
+  --color-text: #1b1d20;
+  /* Dark for readability */
   --color-text-muted: #535964;
   --color-text-light: #fff3cc;
 
   /* Playful / Segment colors */
-  --color-segment-1: #F87171;  /* Soft red */
-  --color-segment-2: #34D399;  /* Green */
-  --color-segment-3: #60A5FA;  /* Light blue */
-  --color-segment-4: #FCD34D;  /* Yellow */
-  --color-segment-5: #A78BFA;  /* Purple */
-  
+  --color-segment-1: #F87171;
+  /* Soft red */
+  --color-segment-2: #34D399;
+  /* Green */
+  --color-segment-3: #60A5FA;
+  /* Light blue */
+  --color-segment-4: #FCD34D;
+  /* Yellow */
+  --color-segment-5: #A78BFA;
+  /* Purple */
+
 }
+
 @theme {
-  --color-primary: #3B82F6;    /* Vibrant blue, friendly */
-  --color-secondary: #fff1cd;  /* Warm yellow, playful accent */
+  --color-primary: #3B82F6;
+  /* Vibrant blue, friendly */
+  --color-secondary: #fff1cd;
+  /* Warm yellow, playful accent */
   --color-button: #ffdf76;
   /* Backgrounds */
-  --color-bg: #F9FAFB;  
-  --color-dark-container: #4d4d4d;       /* Very light gray/white */
-  --color-card: #FFFFFF;       /* Card background */
-  --color-bg-alt: #EFF6FF;     /* Subtle blue tint for sections */
+  --color-bg: #F9FAFB;
+  --color-dark-container: #4d4d4d;
+  /* Very light gray/white */
+  --color-card: #FFFFFF;
+  /* Card background */
+  --color-bg-alt: #EFF6FF;
+  /* Subtle blue tint for sections */
 
   /* Text */
-  --color-text: #1b1d20;       /* Dark for readability */
-  --color-text-muted: #535964; /* Gray for secondary text */
+  --color-text: #1b1d20;
+  /* Dark for readability */
+  --color-text-muted: #535964;
+  /* Gray for secondary text */
   --color-text-light: #fff3cc;
 
   /* Playful / Segment colors */
-  --color-segment-1: #F87171;  /* Soft red */
-  --color-segment-2: #34D399;  /* Green */
-  --color-segment-3: #60A5FA;  /* Light blue */
-  --color-segment-4: #FCD34D;  /* Yellow */
-  --color-segment-5: #A78BFA;  /* Purple */
+  --color-segment-1: #F87171;
+  /* Soft red */
+  --color-segment-2: #34D399;
+  /* Green */
+  --color-segment-3: #60A5FA;
+  /* Light blue */
+  --color-segment-4: #FCD34D;
+  /* Yellow */
+  --color-segment-5: #A78BFA;
+  /* Purple */
 }
 
 @theme inline {
@@ -71,7 +94,7 @@ body {
 }
 
 @layer components {
-  
+
   .background {
     @apply min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-200;
   }
@@ -80,9 +103,22 @@ body {
     -webkit-text-stroke: 4px rgba(240, 240, 240, 0.63);
     -webkit-text-fill-color: transparent;
   }
+
   .text-outline-dark {
     -webkit-text-stroke: 4px rgba(41, 41, 41, 0.63);
     -webkit-text-fill-color: transparent;
+  }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
   .gradient-text {
@@ -108,7 +144,7 @@ body {
 
   /* Cards */
   .card {
-    @apply rounded-2xl shadow-lg border border-gray-200/80 p-6 transition-all hover:shadow-2xl  hover:shadow-xl transition-all transform hover:scale-110 hover:rotate-2 border-4;
+    @apply rounded-2xl shadow-lg border border-gray-300/80 p-6 transition-all hover:shadow-2xl hover:shadow-xl transition-all transform hover:scale-110 hover:rotate-2 border-4;
   }
 
   /* Input fields */
@@ -118,29 +154,56 @@ body {
 
   /* Section containers */
   .section-gray {
-    @apply p-8 bg-gray-800/80 rounded-2xl shadow-2xl border-5 border-white/60 transition-all hover:shadow-2xl  hover:shadow-xl transition-all transform hover:scale-110 hover:rotate-2;
+    @apply p-8 bg-gray-800/80 rounded-2xl shadow-2xl border-5 border-white/60 transition-all hover:shadow-2xl hover:shadow-xl transition-all transform hover:scale-110 hover:rotate-2;
   }
+
   .section-dark {
     @apply inline-block bg-gray-800/90 rounded-2xl p-8 shadow-xl border-5 border-white/60;
   }
 }
 
 @keyframes wiggle {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
+
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+
+  50% {
+    transform: rotate(5deg);
+  }
 }
 
 @keyframes bounce-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 @keyframes rainbow {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
+  0% {
+    filter: hue-rotate(0deg);
+  }
+
+  100% {
+    filter: hue-rotate(360deg);
+  }
 }

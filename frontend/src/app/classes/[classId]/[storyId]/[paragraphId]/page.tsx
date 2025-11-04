@@ -128,7 +128,7 @@ export default function ParagraphDrawPage() {
   }
 
   return (
-    <div className="background h-screen flex flex-col">
+    <div className="background min-h-screen flex flex-col">
       {/* Header */}
       <div className="px-4 py-3 flex-shrink-0 bg-gray-700/90 border-b-4 border-dashed border-yellow-400 shadow-md">
         <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function ParagraphDrawPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="btn bg-yellow-100 text-text disabled:bg-gray-500 disabled:text-gray-700"
+            className="btn bg-yellow-100 text-text disabled:bg-gray-500 disabled:text-gray-700 flex items-center gap-2"
           >
             <Save size={20} />
             {saving ? "Shranjevanje..." : "Shrani"}
@@ -154,8 +154,8 @@ export default function ParagraphDrawPage() {
       </div>
 
       {/* Paragraph Text */}
-      <div className="px-4 py-3 flex-shrink-0 bg-white/10 backdrop-blur-sm border-b-2 border-gray-400/30">
-        <p className="text-gray-100 font-semibold text-center leading-relaxed">
+      <div className="px-4 py-3">
+        <p className="text-text font-semibold text-center leading-relaxed">
           "{paragraph.content}"
         </p>
       </div>

@@ -96,7 +96,7 @@ const ViewStudents = () => {
     }
     const isTeacher = userType === "teacher";
     return (
-        <div className="background min-h-screen">
+        <div className="background min-h-screen pb-8">
             {/* Header */}
             <div className="flex justify-between items-center mb-8 bg-gray-700/90 p-8">
                 <div className="flex items-center gap-3">
@@ -144,6 +144,11 @@ const ViewStudents = () => {
                                 {student.email && (
                                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
                                         ✉️ {student.email}
+                                    </p>
+                                )}
+                                {student.code && (
+                                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                                        Koda: {student.code}
                                     </p>
                                 )}
                                 {student.paragraphs && (

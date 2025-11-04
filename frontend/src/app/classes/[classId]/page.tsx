@@ -79,6 +79,7 @@ const ClassPage = () => {
 
           const classStories = cls.stories || [];
           setStories(classStories);
+          console.log(cls);
 
           // Set finalized stories with story details
           const finalized = (cls.finalized_stories || []).map((fs: any) => ({
@@ -173,14 +174,14 @@ const ClassPage = () => {
             <div className="mb-6 flex flex-wrap gap-4">
               <Link
                 href={`/classes/${classId}/addStudents`}
-                className="inline-block bg-sky-400 hover:bg-sky-500 text-text font-semibold py-2 px-4 rounded-lg transition-colors"
+                className="btn inline-block bg-sky-400 text-text"
               >
                 + Dodaj učenca
               </Link>
 
               <Link
                 href={`/classes/${classId}/viewStudents`}
-                className="inline-block bg-purple-400 hover:bg-purple-500 text-text font-semibold py-2 px-4 rounded-lg transition-colors"
+                className="btn inline-block bg-purple-400 text-text"
               >
                 👥 Ogled učencev
               </Link>
@@ -229,7 +230,7 @@ const ClassPage = () => {
                       key={typeof story._id === "string" ? story._id : story._id.$oid}
                       href={`/classes/${classId}/${typeof story._id === "string" ? story._id : story._id.$oid
                         }`}
-                      className="card bg-sky-400 cursor-pointer hover:shadow-xl transition-shadow"
+                      className="card bg-sky-400 cursor-pointer max-w-lg"
                     >
                       <h3 className="text-lg font-semibold text-text mb-2">
                         {story.title}
@@ -276,7 +277,7 @@ const ClassPage = () => {
                         key={storyId}
                         onClick={() => hasParagraphs && openSlideshow(story)}
                         disabled={!hasParagraphs}
-                        className={`card cursor-pointer hover:shadow-xl transition-shadow text-left ${hasParagraphs
+                        className={`card cursor-pointer max-w-lg text-left ${hasParagraphs
                             ? 'bg-green-400'
                             : 'bg-gray-400 opacity-60 cursor-not-allowed'
                           }`}

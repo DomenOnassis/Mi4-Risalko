@@ -160,7 +160,7 @@ def add_paragraph(user_id):
         user_object_id = ObjectId(user_id)
         story_object_id = ObjectId(data.get("story_id"))
     except Exception:
-        return Response( json_util.dumps({'error': 'Invalid id format'})), 400
+        return Response( json_util.dumps({'error': 'Invalid id format p'})), 400
 
     paragraph = {
         'story_id': story_object_id,
@@ -205,7 +205,7 @@ def update_paragraph(paragraph_id):
     try:
         paragraph_object_id = ObjectId(paragraph_id)
     except Exception:
-        return Response(json_util.dumps({'error': 'Invalid id format'}), 400)
+        return Response(json_util.dumps({'error': 'Invalid id format up'}), 400)
 
     update_fields = {}
 
@@ -561,7 +561,7 @@ def create_class():
         ), 200
         
     except Exception:
-        return Response( json_util.dumps({'error': 'Invalid id format'})), 400
+        return Response( json_util.dumps({'error': 'Invalid id format c'})), 400
 
 @api.patch("/classes/<class_id>")
 def update_class(class_id):
@@ -574,7 +574,7 @@ def update_class(class_id):
     
     update_fields = {}
     try:
-        
+        print(data.get("students", []))
         if data.get("class_name") is not None:
             update_fields['class_name'] = data.get("class_name")
 
@@ -603,12 +603,15 @@ def update_class(class_id):
                 })
             update_fields['finalized_stories'] = fd_out
 
+        if data.get("color") is not None:
+            update_fields['color'] = data.get("color")
+
         if not update_fields:
             return Response(json_util.dumps({'error': 'No fields to update'}), 400)        
            
         class_object_id = ObjectId(class_id)
     except Exception:
-        return Response( json_util.dumps({'error': 'Invalid id format'})), 400    
+        return Response( json_util.dumps({'error': 'Invalid id format uc'})), 400    
 
     res = db.update_one(
         "classes",
@@ -696,24 +699,8 @@ def get_class(class_id):
                         "as": "stories"
                     }
             },
-            # populate finalized_stories.story_id by matching to the already-looked-up stories array
             {"$addFields": {
-                        "finalized_stories": {
-                            "$map": {
-                                "input": {"$ifNull": ["$finalized_stories", []]},
-                                "as": "fs",
-                                "in": {
-                                    "story_id": {"$arrayElemAt": [{
-                                        "$filter": {
-                                            "input": "$stories",
-                                            "as": "s",
-                                            "cond": {"$eq": ["$$s._id", "$$fs.story_id"]}
-                                        }
-                                    }, 0]},
-                                    "images": "$$fs.images"
-                                }
-                            }
-                        }
+                        "finalized_stories": {"$ifNull": ["$finalized_stories", []]}
                     }
             },
         ]
@@ -788,6 +775,71 @@ def append_finalized_story_image(class_id, story_id):
 
     return Response(json_util.dumps({'data': True}), mimetype='application/json'), 200
     
+@api.post("/classes/<class_id>/finalize-story/<story_id>")
+def finalize_story(class_id, story_id):
+    """
+    Finalize a story by collecting all paragraphs with their data,
+    adding to finalized_stories, and removing from stories array.
+    """
+    try:
+        class_object_id = ObjectId(class_id)
+        story_object_id = ObjectId(story_id)
+    except Exception:
+        return Response(json_util.dumps({'error': 'Invalid id format'})), 400
+
+    try:
+        collection = db.db['paragraphs']
+        paragraphs = list(collection.find({"story_id": story_object_id}).sort("order", 1))
+
+        if not paragraphs:
+            return Response(json_util.dumps({'error': 'No paragraphs found for this story'})), 404
+
+        story = db.find_one("stories", {"_id": story_object_id})
+        if not story:
+            return Response(json_util.dumps({'error': 'Story not found'})), 404
+
+        paragraphs_data = []
+        for paragraph in paragraphs:
+            paragraphs_data.append({
+                'paragraph_id': paragraph.get('_id'),
+                'content': paragraph.get('content', ''),
+                'drawing': paragraph.get('drawing'),
+                'order': paragraph.get('order', 0)
+            })
+
+        entry = {
+            'story_id': story_object_id,
+            'paragraphs': paragraphs_data,
+            'story': {
+                'title': story.get('title', ''),
+                'short_description': story.get('short_description', ''),
+                'author': story.get('author', '')
+            }
+        }
+
+        res_add = db.update_one(
+            'classes',
+            {'finalized_stories': entry},
+            {'_id': class_object_id},
+            append_array=True
+        )
+
+        if res_add is None:
+            return Response(json_util.dumps({'error': 'Could not add finalized story'})), 400
+
+        db.delete_ref_from_array('classes', 'stories', story_object_id)
+
+        return Response(
+            json_util.dumps({'data': {
+                'message': 'Story finalized successfully',
+                'paragraphs_count': len(paragraphs_data),
+                'entry': entry
+            }}),
+            mimetype='application/json'
+        ), 200
+    except Exception as e:
+        print("Error finalizing story:", e)
+        return Response(json_util.dumps({'error': 'Could not finalize story'})), 400
 
 if __name__=="__main__":
     app.register_blueprint(api)

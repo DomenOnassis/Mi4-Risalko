@@ -70,6 +70,14 @@ const Classes = () => {
   return (
     <div className="background min-h-screen flex items-center justify-center p-4">
       <div className="section-dark max-w-md w-full">
+        <div className="mb-6">
+          <button
+            onClick={() => router.back()}
+            className="text-yellow-100 hover:text-yellow-200 transition-colors font-medium"
+          >
+            ← Nazaj
+          </button>
+        </div>
         <h1 className="text-3xl font-bold text-center mb-6 gradient-text">
           Ustvari nov razred
         </h1>
