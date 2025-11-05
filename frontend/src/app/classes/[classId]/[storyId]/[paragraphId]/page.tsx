@@ -88,7 +88,7 @@ export default function ParagraphDrawPage() {
         return prev;
       });
 
-      alert("Slika uspešno shranjena!");
+      //alert("Slika uspešno shranjena!");
       // Redirect back to story
       router.push(`/classes/${classId}/${storyId}`);
     } catch (err) {

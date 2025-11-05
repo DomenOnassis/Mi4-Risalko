@@ -456,7 +456,7 @@ export default function DrawingCanvas({ onCanvasMount, initialImage }: DrawingCa
                 onClick={redo}
                 className="px-4 py-2 bg-yellow-400 text-purple-800 rounded-full hover:bg-yellow-500 transition-colors font-black shadow-lg transform hover:scale-110 border-2 border-white text-xl"
               >
-                ↪️ Naprej
+                ↪️
               </button>
               <button
                 onClick={clearCanvas}

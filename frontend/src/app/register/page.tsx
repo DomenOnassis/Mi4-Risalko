@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function RegisterPage() {
 
       if (data.data) {
         localStorage.setItem('user', JSON.stringify(data.data));
+        if (data.data.type) Cookies.set("userType", data.data.type);
       }
 
       setSuccess("Uporabnik uspešno ustvarjen!");

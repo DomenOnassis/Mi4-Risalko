@@ -63,7 +63,7 @@ const Classes = () => {
       router.back();
     } catch (error) {
       console.error('Error creating class:', error);
-      alert('Failed to create class');
+      alert('Napaka pri ustvarjanju razreda.');
     }
   };
 

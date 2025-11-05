@@ -71,7 +71,6 @@ export default function StoryPage() {
             setUserType(userType);
             setUserId(user._id?.$oid || user._id || user.id);
             
-            // Normalize paragraph IDs from user object
             userParagraphIds = (user.paragraphs || []).map((p: any) => {
               if (typeof p === 'string') {
                 return p;
@@ -278,9 +277,8 @@ export default function StoryPage() {
       }
 
       const responseData = await res.json();
-      alert(`✅ Slikanica uspešno zaključena! Skupaj ${responseData.data.images_count} slik.`);
+      // alert(`✅ Slikanica uspešno zaključena! Skupaj ${responseData.data.images_count} slik.`);
       
-      // Redirect back to classes
       router.push(`/classes/${classId}`);
     } catch (err) {
       console.error("Napaka pri zaključevanju zgodbe:", err);
@@ -305,7 +303,7 @@ export default function StoryPage() {
           <div className="text-center">
             <p className="text-lg font-semibold text-red-300 mb-4">{error || "Zgodba ni najdena"}</p>
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push(`/classes/${classId}`)}
               className="text-gray-300 hover:text-gray-100 transition-colors text-2xl"
             >
               ←
@@ -327,7 +325,7 @@ export default function StoryPage() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push(`/classes/${classId}`)}
                 className="text-yellow-100 hover:text-yellow-200 transition-colors text-lg font-semibold"
               >
                 ←

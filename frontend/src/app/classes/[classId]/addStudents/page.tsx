@@ -38,7 +38,7 @@ const AddStudentsPage = () => {
                 });
             } catch (error) {
                 console.error('Error fetching class:', error);
-                alert('Could not load class data');
+                alert('Napaka pri nalaganju razreda.');
             } finally {
                 setLoading(false);
             }
@@ -137,7 +137,7 @@ const AddStudentsPage = () => {
                 throw new Error(updateResult.error || 'Failed to update class');
             }
 
-            alert(`✅ Uspešno dodanih ${createdStudentIds.length} učencev v razred ${classData.data?.class_name || ''}`);
+            //alert(`✅ Uspešno dodanih ${createdStudentIds.length} učencev v razred ${classData.data?.class_name || ''}`);
 
             setStudents([{ firstName: '', lastName: '' }]);
 

@@ -33,7 +33,7 @@ const EditClass = () => {
         });
       } catch (error) {
         console.error('Error fetching class:', error);
-        alert('Could not load class data');
+        alert('Napaka pri nalaganju razreda.');
       } finally {
         setLoading(false);
       }
@@ -67,7 +67,7 @@ const EditClass = () => {
       router.back();
     } catch (error) {
       console.error('Error updating class:', error);
-      alert('Failed to update class');
+      alert('Napaka pri posodabljanju razreda.');
     }
   };
 

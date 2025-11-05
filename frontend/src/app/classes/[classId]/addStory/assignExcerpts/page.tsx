@@ -189,7 +189,7 @@ const AssignExcerptsPage = () => {
         });
       }
 
-      alert(`✅ Zgodba "${storyData.title}" z ${assignedCount} odlomki uspešno ustvarjena!`);
+      //alert(`✅ Zgodba "${storyData.title}" z ${assignedCount} odlomki uspešno ustvarjena!`);
       
       sessionStorage.removeItem('newStory');
       sessionStorage.removeItem('storyExcerpts');

@@ -1,6 +1,7 @@
 "use client";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function LoginPage() {
 
       if (data.data) {
         localStorage.setItem('user', JSON.stringify(data.data));
+        if (data.data.type) Cookies.set("userType", data.data.type);
       }
 
       setSuccess("Uporabnik uspešno prijavljen!");

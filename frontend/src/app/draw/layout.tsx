@@ -17,8 +17,11 @@ export default function ClassesLayout({
     if (!userType) router.push("/"); 
   }, [userType, router]);
 
+  if (userType === null) {
+    return null;
+  }
+
   if (!userType) {
-     
     return <p>Niste prijavljeni</p>;
   }
 
